@@ -47,6 +47,8 @@ body[data-state=error] .ocean-presets,body[data-state=lost] .ocean-presets{displ
 
 .ink-palette-row{display:none}
 body[data-scene="ink"] .ink-palette-row{display:flex}
+/* Ink Sea is also the still/loading view for the homepage. */
+body{background:linear-gradient(#4d556b 0%,#3d465d 33%,#172439 34%,#0b1426 100%)}
 @media(max-width:700px){.ocean-presets button:last-child{grid-column:1/-1}}
 </style></head>
 <body data-state="loading">
@@ -54,7 +56,7 @@ body[data-scene="ink"] .ink-palette-row{display:flex}
 <a class="ocean-brand" href="index.html#work">GINTER STUDIO <span>OCEAN STUDIES</span></a>
 <div id="hud"><span id="fps">FORMING THE HORIZON</span><span class="help">DRAG TO LOOK · WASD TO MOVE</span></div>
 <div id="loading" role="status"><span class="loader-mark">*</span><span>FORMING THE HORIZON</span></div>
-<div class="ocean-presets" role="group" aria-label="Ocean scenes"><button type="button" data-ocean-preset="aerial" aria-pressed="false" disabled>BLUE AERIAL</button><button type="button" data-ocean-preset="dusk" aria-pressed="true" disabled>SAVED DUSK</button><button type="button" data-ocean-preset="ink" aria-pressed="false" disabled>INK SEA</button></div>
+<div class="ocean-presets" role="group" aria-label="Ocean scenes"><button type="button" data-ocean-preset="aerial" aria-pressed="false" disabled>BLUE AERIAL</button><button type="button" data-ocean-preset="dusk" aria-pressed="false" disabled>SAVED DUSK</button><button type="button" data-ocean-preset="ink" aria-pressed="true" disabled>INK SEA</button></div>
 <div class="ocean-toolbar" role="group" aria-label="Ocean controls"><button id="pause" type="button" disabled aria-pressed="false">PAUSE Ⅱ</button><button id="reset" type="button" disabled aria-label="Reset view">RESET ↺</button><button id="settings" type="button" disabled aria-expanded="false" aria-controls="panel">SETTINGS +</button><button id="look" type="button" aria-pressed="false">LOOK ↔</button></div>
 <section id="panel" class="hidden" aria-label="Ocean settings"><div class="panel-heading"><h2>YOUR HORIZON</h2><button id="close-settings" type="button" aria-label="Close ocean settings">×</button></div><p class="panel-intro">Make yourself at home on the water.</p><label class="option ink-palette-row" for="ink-palette"><span>Ink palette</span><select id="ink-palette" aria-label="Ink palette"><option value="0">INDIGO</option><option value="1">PETROL</option><option value="2">GRAPHITE</option></select></label><div id="sliders"></div><label class="option"><span>Float with the waves</span><input id="float-mode" type="checkbox" checked></label><label class="option"><span>Image detail</span><select id="quality"><option value="balanced">Balanced</option><option value="high">High</option></select></label><p id="camera-status">Camera settling…</p><p id="render-status"></p><p class="panel-instructions">Drag to look · WASD to move<br>E / Q to raise or lower · Shift to move faster<br>Space to pause · H for settings · R to reset</p><p class="credit">Ocean engine adapted from <a href="https://github.com/Noniv/web-ocean" target="_blank" rel="noopener">Noniv / Maksymilian Dendura</a> · MIT</p></section>
 <div id="touch-pad" role="group" aria-label="Move camera"><button data-move="KeyW" aria-label="Move forward">↑</button><button data-move="KeyA" aria-label="Move left">←</button><button data-move="KeyS" aria-label="Move backward">↓</button><button data-move="KeyD" aria-label="Move right">→</button></div>
@@ -2209,7 +2211,7 @@ async function main() {
     dusk:{label:'Saved dusk',code:0,pose:{y:3.9,pitch:-4.5,floating:true},quality:'high',params:{windSpeed:6.3,swellHs:2.1,choppy:0,foam:0,sunElev:-.1,sunAzim:4,exposure:.5,haze:6,clouds:.31,veil:.28,turbidity:1.6,bloom:.10}},
     ink:{label:'Ink sea',code:2,pose:{y:3.2,pitch:-10,floating:true},params:{windSpeed:6.5,swellHs:1.2,choppy:1.15,foam:.5,sunElev:1.8,sunAzim:12,exposure:1.15,haze:2,clouds:.38,veil:.26,turbidity:1.6,bloom:.04}}
   };
-  let currentPreset='dusk',inkPalette=0;
+  let currentPreset='ink',inkPalette=0;
   const savedLooks={};
   const presetKeys=Object.keys(OCEAN_PRESETS.dusk.params);
   const sceneStorageKey='ginter-ocean-scenes-v3';
@@ -2226,7 +2228,7 @@ async function main() {
     dirty=true;
   }
   function applyOceanPreset(id,remember=true){
-    if(!OCEAN_PRESETS[id])id='dusk';
+    if(!OCEAN_PRESETS[id])id='ink';
     if(remember)saveSceneSettings();
     currentPreset=id;
     const preset=OCEAN_PRESETS[id],saved=savedLooks[id];
@@ -2243,7 +2245,8 @@ async function main() {
     saveSceneSettings();
   }
   function initOceanPresets(){
-    let initial=qs.get('scene')||'dusk';
+    // The homepage always opens Ink Sea; per-scene settings remain saved.
+    let initial=qs.get('scene')||'ink';
     try{
       const currentRecord=localStorage.getItem(sceneStorageKey);
       const record=JSON.parse(currentRecord||localStorage.getItem('ginter-ocean-scenes-v2')||'null');
@@ -2253,7 +2256,6 @@ async function main() {
         for(const k of presetKeys)if(Number.isFinite(look.params[k]))params[k]=look.params[k];
         savedLooks[id]={params,quality:look.quality==='high'?'high':'balanced'};
       }
-      if(!qs.has('scene')&&OCEAN_PRESETS[record?.active])initial=record.active;
       if(Number.isInteger(record?.inkPalette))inkPalette=Math.max(0,Math.min(2,record.inkPalette));
     }catch{}
     for(const button of document.querySelectorAll('[data-ocean-preset]'))button.addEventListener('click',()=>{applyOceanPreset(button.dataset.oceanPreset);resetFocus();});
