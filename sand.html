@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07131d">
+<title>Dune Garden — GINTER STUDIO</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07131d;color:#e6e9e6;font-family:Arial,Helvetica,sans-serif}button,select,input{font:inherit}button,select{color:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #dce5df;outline-offset:4px}#sand-canvas,#sand-fallback{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:pan-y}#sand-fallback{display:none}body.touch-raking canvas{touch-action:none!important}#sand-hud{position:fixed;z-index:2;right:30px;top:30px;text-align:right;pointer-events:none;font-size:9px;letter-spacing:.12em;line-height:1.85;text-shadow:0 1px 12px #0009}#sand-hud span{display:block;color:#cad5d6a8;font-size:8px;letter-spacing:.08em;margin-top:5px}.sand-tools{position:fixed;z-index:3;right:30px;bottom:30px;display:flex;gap:7px;align-items:stretch}.sand-tools button,.sand-tools label{min-height:44px;border:1px solid #dae3df50;background:#0c1d29a8;backdrop-filter:blur(16px);font-size:9px;letter-spacing:.06em;white-space:nowrap}.sand-tools button{padding:11px 15px}.sand-tools button:hover,.sand-tools button[aria-pressed=true]{background:#405461bb;border-color:#cedbd7a0}.sand-tools label{display:flex;align-items:center;gap:9px;padding:0 12px;color:#d5dfdf}.sand-tools select{height:35px;max-width:70px;background:transparent;border:0;font-size:9px;letter-spacing:.03em;cursor:pointer}.sand-tools select option{background:#152b39}#sand-touch{display:none}#sand-ready{position:fixed;inset:0;display:grid;place-items:center;font-size:9px;letter-spacing:.15em;pointer-events:none;color:#d3dddd}body[data-state=ready] #sand-ready,body[data-state=fallback] #sand-ready{display:none}#rake-cursor{position:fixed;left:0;top:0;z-index:1;width:28px;height:28px;transform:translate(-50%,-50%);border:1px solid #e1e9e45c;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .18s;mix-blend-mode:screen}#rake-cursor::after{content:"";position:absolute;inset:5px;border-radius:50%;border:1px solid #e4eee126}body.rake-over #rake-cursor{opacity:1}#sand-notice{position:fixed;right:30px;bottom:88px;z-index:2;margin:0;font-size:9px;line-height:1.6;letter-spacing:.04em;color:#cddbd7;opacity:0;pointer-events:none;transition:opacity .4s}#sand-notice.visible{opacity:1}@media(max-width:700px){#sand-hud{top:30px;right:22px;font-size:8px}#sand-hud span{max-width:150px;font-size:7px}.sand-tools{right:18px;bottom:118px;display:grid;grid-template-columns:1fr 1fr;gap:5px;width:192px}.sand-tools button,.sand-tools label{min-height:44px;font-size:8px;padding:8px 8px}.sand-tools label{justify-content:center;gap:4px}.sand-tools select{font-size:8px;max-width:62px}#sand-touch{display:block}#sand-wind{display:none}#sand-notice{right:18px;bottom:218px;font-size:8px;max-width:190px;text-align:right}#rake-cursor{display:none}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body data-state="loading">
+<canvas id="sand-canvas" aria-label="Interactive grey blue dunes. Move your mouse over the sand to draw persistent rake marks, or focus this canvas and use the arrow keys to rake." tabindex="0" data-scene="sand" data-renderer="starting" data-frame="0" data-strokes="0" data-marks="0" data-view="dunes"></canvas>
+<canvas id="sand-fallback" aria-hidden="true"></canvas>
+<div id="sand-hud">DUNE GARDEN<span id="sand-instruction">MOVE TO RAKE THE SAND</span></div>
+<p id="sand-notice" role="status" aria-live="polite"></p>
+<div class="sand-tools" aria-label="Dune Garden controls">
+<button id="sand-view" type="button" aria-label="Switch to overhead view" aria-pressed="false">OVERHEAD ↗</button>
+<label for="rake-width">RAKE <select id="rake-width" aria-label="Rake width"><option value="1.25">FINE</option><option value="2.4" selected>MEDIUM</option><option value="4">WIDE</option></select></label>
+<button id="sand-clear" type="button">CLEAR SAND ↺</button>
+<button id="sand-wind" type="button" aria-pressed="false">WIND OFF</button>
+<button id="sand-touch" type="button" aria-pressed="false">RAKE OFF</button>
+</div>
+<div id="rake-cursor" aria-hidden="true"></div>
+<div id="sand-ready">SHAPING THE DUNES</div>
+<script>
+(()=>{'use strict';
+// Every stroke changes a world-space sand height field. The same field is used
+// for ray intersection, surface displacement, shadows and lighting.
+const canvas=document.getElementById('sand-canvas'),fallbackCanvas=document.getElementById('sand-fallback');
+const viewButton=document.getElementById('sand-view'),windButton=document.getElementById('sand-wind'),touchButton=document.getElementById('sand-touch'),widthControl=document.getElementById('rake-width'),notice=document.getElementById('sand-notice'),instruction=document.getElementById('sand-instruction'),cursor=document.getElementById('rake-cursor');
+const SIZE=1024,MIN_X=-36,MIN_Z=-48,SPAN=72,NEUTRAL=128,HEIGHT_SCALE=.84;
+const heights=new Uint8Array(SIZE*SIZE);heights.fill(NEUTRAL);
+let gl=null,program=null,texture=null,uniforms={},isFallback=false,textureDirty=true,frame=0,strokes=0,marks=0,rakeWidth=2.4,wind=false,touchRaking=false,overhead=false,viewMix=0,parentVisible=true,visible=true,lastTime=0,lastWind=0,lastDraw=0,raf=0,previousHit=null,latestPointer=null,mouseInside=false,strokeActive=false,noticeTimer=0,needsFallbackDraw=true,contextLost=false,windTimer=0;
+const coarse=matchMedia('(pointer:coarse)').matches,reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const camera={position:[0,6.8,26],target:[0,.2,-30],right:[1,0,0],up:[0,1,0],forward:[0,0,-1],aspect:1,tan:.445};
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function mix(a,b,t){return a+(b-a)*t}function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]}function sub(a,b){return[a[0]-b[0],a[1]-b[1],a[2]-b[2]]}function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}function normalized(a){let d=Math.hypot(...a)||1;return a.map(v=>v/d)}
+function dune(d,near,far,height){const s=d>0?near:far;return height*Math.exp(-d*d/(s*s))}
+function baseHeight(x,z){
+ const c0=z+3.0+10.0*Math.sin(x*.075+.4)+x*.22+x*x*.003;
+ const c1=z+35.0+8.0*Math.sin(x*.070+.95)+x*.10;
+ const c2=z+72.0+8.0*Math.sin(x*.047+1.7)-x*.07;
+ return -.7+.17*Math.sin(x*.077+z*.063)+dune(c0,14,3.4,4.8)+dune(c1,16,4.2,5.7)+dune(c2,20,5.8,6.8);
+}
+function markHeight(x,z){const u=(x-MIN_X)/SPAN*(SIZE-1),v=(z-MIN_Z)/SPAN*(SIZE-1);if(u<0||u>=SIZE-1||v<0||v>=SIZE-1)return 0;const i=Math.floor(u),j=Math.floor(v),fx=u-i,fy=v-j,a=j*SIZE+i;return(mix(mix(heights[a],heights[a+1],fx),mix(heights[a+SIZE],heights[a+SIZE+1],fx),fy)-NEUTRAL)/255*HEIGHT_SCALE}
+function heightAt(x,z){return baseHeight(x,z)+markHeight(x,z)}
+function updateCamera(){const t=viewMix*viewMix*(3-2*viewMix);camera.position=[mix(0,0,t),mix(6.8,36,t),mix(26,-3,t)];camera.target=[0,mix(.2,0,t),mix(-30,-10,t)];camera.forward=normalized(sub(camera.target,camera.position));camera.right=normalized(cross(camera.forward,[0,1,0]));camera.up=cross(camera.right,camera.forward);camera.aspect=canvas.clientWidth/Math.max(1,canvas.clientHeight);camera.tan=mix(.445,.55,t)}
+function castRay(px,py){
+ if(isFallback){return{x:MIN_X+px/innerWidth*SPAN,z:MIN_Z+py/innerHeight*SPAN}}
+ const nx=(px/innerWidth*2-1)*camera.aspect*camera.tan,ny=(1-py/innerHeight*2)*camera.tan;
+ const rd=normalized(camera.forward.map((v,i)=>v+camera.right[i]*nx+camera.up[i]*ny)),ro=camera.position;
+ let t=.2,previous=.2;for(let n=0;n<190&&t<240;n++){let x=ro[0]+rd[0]*t,y=ro[1]+rd[1]*t,z=ro[2]+rd[2]*t,d=y-heightAt(x,z);if(d<0){let lo=previous,hi=t;for(let k=0;k<9;k++){let m=(lo+hi)*.5;if(ro[1]+rd[1]*m>heightAt(ro[0]+rd[0]*m,ro[2]+rd[2]*m))lo=m;else hi=m}t=(lo+hi)*.5;x=ro[0]+rd[0]*t;z=ro[2]+rd[2]*t;return x>MIN_X+1&&x<MIN_X+SPAN-1&&z>MIN_Z+1&&z<MIN_Z+SPAN-1?{x,z}:null}previous=t;t+=clamp(d*.50,.23,2.8)}return null;
+}
+function updateStats(){canvas.dataset.strokes=String(strokes);canvas.dataset.marks=String(marks);canvas.dataset.view=overhead?'overhead':'dunes';canvas.dataset.wind=wind?'on':'off';canvas.dataset.rakeWidth=String(rakeWidth)}
+function say(message){notice.textContent=message;notice.classList.add('visible');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.classList.remove('visible'),2600)}
+// A soft train of seven furrows and displaced shoulders, aligned to the stroke.
+function rakeStamp(x,z,tx,tz){
+ const radius=rakeWidth*.52,ppm=(SIZE-1)/SPAN,cx=(x-MIN_X)*ppm,cz=(z-MIN_Z)*ppm,r=radius*ppm;
+ const minX=Math.max(1,Math.floor(cx-r)),maxX=Math.min(SIZE-2,Math.ceil(cx+r)),minZ=Math.max(1,Math.floor(cz-r)),maxZ=Math.min(SIZE-2,Math.ceil(cz+r));
+ const spacing=rakeWidth/7,footprint=spacing*.22,alongRadius=Math.max(.15,spacing*.63);
+ for(let j=minZ;j<=maxZ;j++){const dz=(j-cz)/ppm;for(let i=minX;i<=maxX;i++){const dx=(i-cx)/ppm,across=dx*(-tz)+dz*tx,along=dx*tx+dz*tz;if(Math.abs(across)>rakeWidth*.51||Math.abs(along)>alongRadius*2.2)continue;
+ const tine=clamp(Math.round(across/spacing),-3,3),offset=across-tine*spacing;
+ const valley=Math.exp(-offset*offset/(footprint*footprint)),shoulder=Math.exp(-Math.pow((Math.abs(offset)-spacing*.32)/(spacing*.14),2));
+ const edge=1-Math.pow(Math.abs(across)/(rakeWidth*.53),10),weight=Math.exp(-along*along/(alongRadius*alongRadius))*clamp(edge,0,1);
+ const target=NEUTRAL+(-.045*valley+.014*shoulder)/HEIGHT_SCALE*255,idx=j*SIZE+i;heights[idx]=clamp(Math.round(mix(heights[idx],target,weight*.82)),1,254);
+ }}textureDirty=true;needsFallbackDraw=true;marks++;
+}
+function processPointer(){if(!latestPointer)return;const p=latestPointer;latestPointer=null;const hit=castRay(p.x,p.y);document.body.classList.toggle('rake-over',!!hit);if(!hit){previousHit=null;strokeActive=false;return}if(!previousHit){previousHit=hit;return}const dx=hit.x-previousHit.x,dz=hit.z-previousHit.z,distance=Math.hypot(dx,dz);if(distance<.025)return;if(distance>5){previousHit=hit;strokeActive=false;return}if(!strokeActive){strokes++;strokeActive=true}const tx=dx/distance,tz=dz/distance,steps=Math.min(180,Math.max(1,Math.ceil(distance/.055)));for(let n=1;n<=steps;n++){const t=n/steps;rakeStamp(mix(previousHit.x,hit.x,t),mix(previousHit.z,hit.z,t),tx,tz)}previousHit=hit;updateStats()}
+function releasePointer(){previousHit=null;latestPointer=null;strokeActive=false;mouseInside=false;document.body.classList.remove('rake-over')}
+function pointerMove(event){if(!visible||contextLost)return;if(event.pointerType==='touch'&&!touchRaking)return;if(event.pointerType==='touch'&&event.buttons===0)return;mouseInside=true;cursor.style.left=event.clientX+'px';cursor.style.top=event.clientY+'px';latestPointer={x:event.clientX,y:event.clientY};if(!raf)start()}
+function bindPointer(surface){surface.addEventListener('pointermove',pointerMove);surface.addEventListener('pointerdown',event=>{if(event.pointerType==='touch'&&!touchRaking)return;if(event.pointerType==='touch'){event.preventDefault();surface.setPointerCapture(event.pointerId)}previousHit=null;pointerMove(event)});surface.addEventListener('pointerup',event=>{if(event.pointerType==='touch')releasePointer()});surface.addEventListener('pointercancel',releasePointer);surface.addEventListener('pointerleave',releasePointer)}
+bindPointer(canvas);bindPointer(fallbackCanvas);document.querySelector('.sand-tools').addEventListener('pointerenter',releasePointer);window.addEventListener('blur',releasePointer);
+let keyboardPointer=null;function keyboardRake(event){if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Escape'].includes(event.key))return;event.preventDefault();if(event.key==='Escape'){keyboardPointer=null;releasePointer();return}if(!keyboardPointer)keyboardPointer={x:innerWidth*.5,y:innerHeight*.73};const step=event.shiftKey?34:16;if(event.key==='ArrowLeft')keyboardPointer.x-=step;if(event.key==='ArrowRight')keyboardPointer.x+=step;if(event.key==='ArrowUp')keyboardPointer.y-=step;if(event.key==='ArrowDown')keyboardPointer.y+=step;keyboardPointer.x=clamp(keyboardPointer.x,24,innerWidth-24);keyboardPointer.y=clamp(keyboardPointer.y,innerHeight*.47,innerHeight-24);pointerMove({pointerType:'mouse',clientX:keyboardPointer.x,clientY:keyboardPointer.y})}for(const surface of [canvas,fallbackCanvas]){surface.addEventListener('keydown',keyboardRake);surface.addEventListener('blur',()=>{keyboardPointer=null;releasePointer()})}
+viewButton.addEventListener('click',()=>{overhead=!overhead;viewButton.textContent=overhead?'DUNES ↙':'OVERHEAD ↗';viewButton.setAttribute('aria-label',overhead?'Switch to dunes view':'Switch to overhead view');viewButton.setAttribute('aria-pressed',String(overhead));releasePointer();updateStats();start()});
+document.getElementById('sand-clear').addEventListener('click',()=>{heights.fill(NEUTRAL);strokes=0;marks=0;textureDirty=true;needsFallbackDraw=true;releasePointer();updateStats();say('A clean beginning.');start()});
+widthControl.addEventListener('change',()=>{rakeWidth=Number(widthControl.value);releasePointer();updateStats()});
+windButton.addEventListener('click',()=>{wind=!wind;windButton.textContent=wind?'WIND ON':'WIND OFF';windButton.setAttribute('aria-pressed',String(wind));updateStats();say(wind?'The wind will slowly soften your marks.':'Your marks will stay in the sand.');start()});
+touchButton.addEventListener('click',()=>{touchRaking=!touchRaking;touchButton.textContent=touchRaking?'RAKE ON':'RAKE OFF';touchButton.setAttribute('aria-pressed',String(touchRaking));document.body.classList.toggle('touch-raking',touchRaking);instruction.textContent=touchRaking?'DRAG TO RAKE · TAP RAKE TO SCROLL':'TAP RAKE ON TO DRAW IN THE SAND';releasePointer()});
+if(coarse)instruction.textContent='TAP RAKE ON TO DRAW IN THE SAND';
+const vertexSource=`#version 300 es
+precision highp float;
+out vec2 vUV;
+void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);vUV=p;gl_Position=vec4(p*2.-1.,0.,1.);}`;
+const fragmentSource=`#version 300 es
+precision highp float;
+in vec2 vUV;
+out vec4 fragColor;
+uniform sampler2D uMarks;
+uniform vec2 uResolution;
+uniform vec3 uCamera,uForward,uRight,uUp;
+uniform float uAspect,uTan,uTime;
+uniform int uQuality;
+const vec3 LIGHT=vec3(-.730,.380,-.568);
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+1.),f.x),f.y);}
+float dune(float d,float a,float b,float h){float s=d>0.?a:b;return h*exp(-d*d/(s*s));}
+float base(vec2 p){float x=p.x,z=p.y;float c0=z+3.+10.*sin(x*.075+.4)+x*.22+x*x*.003;float c1=z+35.+8.*sin(x*.070+.95)+x*.10;float c2=z+72.+8.*sin(x*.047+1.7)-x*.07;return -.7+.17*sin(x*.077+z*.063)+dune(c0,14.,3.4,4.8)+dune(c1,16.,4.2,5.7)+dune(c2,20.,5.8,6.8);}
+float mark(vec2 p){vec2 uv=(p-vec2(-36.,-48.))/72.;if(any(lessThan(uv,vec2(0.)))||any(greaterThan(uv,vec2(1.))))return 0.;return (texture(uMarks,uv).r-128./255.)*.84;}
+float terrain(vec2 p){return base(p)+mark(p);}
+float ripples(vec2 p){float windWarp=p.x*55.+p.y*11.3+.8*sin(p.y*.44)+1.2*sin(p.x*.11+p.y*.15);return sin(windWarp)*.00009+sin(windWarp*1.96+.9)*.00002;}
+float surface(vec2 p){return base(p)+mark(p)*.68+ripples(p);}
+vec3 sky(vec3 ray){float horizon=exp(-max(ray.y,0.)*3.8);vec3 col=mix(vec3(.009,.019,.029),vec3(.040,.068,.084),horizon);float haze=exp(-abs(ray.x+.28)*1.6)*horizon;return col+vec3(.006,.010,.011)*haze;}
+float shadow(vec3 p){float result=1.,t=.16;for(int i=0;i<20;i++){vec3 q=p+LIGHT*t;float delta=q.y-base(q.xz);result=min(result,10.*delta/t);t+=.20+t*.18;}return clamp(result,.0,1.);}
+void main(){
+ vec2 uv=(gl_FragCoord.xy/uResolution)*2.-1.;vec3 rd=normalize(uForward+uRight*uv.x*uAspect*uTan+uUp*uv.y*uTan),ro=uCamera;
+ float t=.15,last=.15;bool hit=false;
+ for(int i=0;i<230;i++){if(t>230.)break;vec3 q=ro+rd*t;float d=q.y-terrain(q.xz);if(d<0.){hit=true;break;}last=t;t+=clamp(d*.50,.23,2.8);}
+ if(!hit&&rd.y<-.005){float farT=(-1.1-ro.y)/rd.y;vec3 farP=ro+rd*farT;if(farT>t&&farT<650.&&farP.y<terrain(farP.xz)){last=t;t=farT;hit=true;}}
+ vec3 color=sky(rd);
+ if(hit){float lo=last,hi=t;for(int i=0;i<7;i++){float m=(lo+hi)*.5;vec3 q=ro+rd*m;if(q.y>terrain(q.xz))lo=m;else hi=m;}t=(lo+hi)*.5;vec3 p=ro+rd*t;float ep=.035;
+  vec3 n=normalize(vec3(surface(p.xz-vec2(ep,0.))-surface(p.xz+vec2(ep,0.)),2.*ep,surface(p.xz-vec2(0.,ep))-surface(p.xz+vec2(0.,ep))));
+  vec3 bn=normalize(vec3(base(p.xz-vec2(.09,0.))-base(p.xz+vec2(.09,0.)),.18,base(p.xz-vec2(0.,.09))-base(p.xz+vec2(0.,.09))));
+  float sun=max(dot(n,LIGHT),0.);float sh=shadow(p+bn*.045);float ambient=.04+.025*max(n.y,0.);float broad=max(dot(bn,LIGHT),0.);
+  float grain=noise(p.xz*270.);float material=.96+.08*(grain-.5)+.023*(noise(p.xz*1.8)-.5);
+  vec3 sand=vec3(.610,.638,.626)*material;
+  vec3 coolShade=vec3(.016,.038,.054);
+  float direct=pow(sun,.88)*mix(.025,1.,sh);
+  color=sand*direct*1.42+coolShade*(.8+.4*max(n.y,0.));
+  float depression=mark(p.xz);float packed=1.-smoothstep(-.045,-.012,depression);color*=1.-packed*.045;
+  float glint=pow(max(dot(n,normalize(LIGHT-rd)),0.),24.)*.016*sh;color+=vec3(.6,.70,.76)*glint;
+  float fog=1.-exp(-max(t-25.,0.)*.006);color=mix(color,vec3(.045,.077,.093),fog*.7);
+  // Fine wind ripples fade naturally into the distance, not a screen texture.
+  float rippleMask=clamp(1.-t/90.,0.,1.);color*=1.+sin(p.x*55.+p.z*11.3+.8*sin(p.z*.44))*rippleMask*.0025;
+ }
+ color=pow(max(color,vec3(0.)),vec3(.93));
+ vec2 film=gl_FragCoord.xy;float grain=hash(film+vec2(floor(uTime*.1)))-.5;color+=grain*.003;
+ float vig=1.-.12*pow(length(uv*vec2(.64,.48)),1.7);color*=vig;
+ fragColor=vec4(clamp(color,0.,1.),1.);
+}`;
+function compile(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){const message=gl.getShaderInfoLog(s);gl.deleteShader(s);throw Error(message)}return s}
+function initGL(){gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:false,stencil:false,powerPreference:'high-performance',preserveDrawingBuffer:false});if(!gl)throw Error('WebGL 2 unavailable');program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vertexSource));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fragmentSource));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));gl.useProgram(program);gl.bindVertexArray(gl.createVertexArray());for(const key of ['uMarks','uResolution','uCamera','uForward','uRight','uUp','uAspect','uTan','uTime','uQuality'])uniforms[key]=gl.getUniformLocation(program,key);texture=gl.createTexture();gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,SIZE,SIZE,0,gl.RED,gl.UNSIGNED_BYTE,heights);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.uniform1i(uniforms.uMarks,0);canvas.dataset.renderer='webgl2';document.body.dataset.state='ready'}
+function initFallback(message){isFallback=true;canvas.style.display='none';fallbackCanvas.style.display='block';canvas.setAttribute('aria-hidden','true');canvas.tabIndex=-1;fallbackCanvas.removeAttribute('aria-hidden');fallbackCanvas.tabIndex=0;fallbackCanvas.setAttribute('aria-label',canvas.getAttribute('aria-label'));canvas.dataset.renderer='canvas2d';canvas.dataset.fallbackReason=message;document.body.dataset.state='fallback';overhead=true;viewMix=1;viewButton.disabled=true;viewButton.textContent='OVERHEAD';instruction.textContent=coarse?'TAP RAKE ON TO DRAW':'MOVE TO RAKE · OVERHEAD VIEW';updateStats()}
+function drawFallback(){const w=Math.min(520,Math.round(innerWidth*.65)),h=Math.max(180,Math.round(w*innerHeight/innerWidth));fallbackCanvas.width=w;fallbackCanvas.height=h;const context=fallbackCanvas.getContext('2d'),data=context.createImageData(w,h);for(let j=0;j<h;j++){for(let i=0;i<w;i++){const x=MIN_X+i/w*SPAN,z=MIN_Z+j/h*SPAN,e=.075,n=normalized([heightAt(x-e,z)-heightAt(x+e,z),2*e,heightAt(x,z-e)-heightAt(x,z+e)]),sun=Math.max(dot(n,[-.730,.380,-.568]),0),v=.16+sun*.86,k=(j*w+i)*4;data.data[k]=Math.round((.475*v+.019)*255);data.data[k+1]=Math.round((.5*v+.031)*255);data.data[k+2]=Math.round((.494*v+.043)*255);data.data[k+3]=255}}context.putImageData(data,0,0);needsFallbackDraw=false}
+function resize(){if(isFallback){needsFallbackDraw=true;return}const cap=coarse?1.25:1.5,dpr=Math.min(devicePixelRatio||1,cap),maxPixels=coarse?950000:1800000,scale=Math.min(1,Math.sqrt(maxPixels/(innerWidth*innerHeight*dpr*dpr))),w=Math.max(1,Math.round(innerWidth*dpr*scale)),h=Math.max(1,Math.round(innerHeight*dpr*scale));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h)}updateCamera()}
+function erode(){for(let n=0;n<heights.length;n++){const d=heights[n]-NEUTRAL;if(d)heights[n]=NEUTRAL+Math.trunc(d*.97)}textureDirty=true;needsFallbackDraw=true}
+function render(now){raf=0;if(!visible||contextLost)return;const dt=Math.min((now-lastTime)/1000,.05)||.016;lastTime=now;const target=overhead?1:0;if(Math.abs(viewMix-target)>.0002){viewMix=reduced?target:mix(viewMix,target,1-Math.exp(-dt*4.6));previousHit=null}else viewMix=target;updateCamera();processPointer();if(wind&&marks&&now-lastWind>550){erode();lastWind=now}if(isFallback){if(needsFallbackDraw&&now-lastDraw>80){drawFallback();lastDraw=now}}else{if(textureDirty){gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,SIZE,SIZE,gl.RED,gl.UNSIGNED_BYTE,heights);textureDirty=false}gl.useProgram(program);gl.uniform2f(uniforms.uResolution,canvas.width,canvas.height);gl.uniform3fv(uniforms.uCamera,camera.position);gl.uniform3fv(uniforms.uForward,camera.forward);gl.uniform3fv(uniforms.uRight,camera.right);gl.uniform3fv(uniforms.uUp,camera.up);gl.uniform1f(uniforms.uAspect,camera.aspect);gl.uniform1f(uniforms.uTan,camera.tan);gl.uniform1f(uniforms.uTime,now/1000);gl.drawArrays(gl.TRIANGLES,0,3)}frame++;canvas.dataset.frame=String(frame);if(latestPointer||viewMix!==target||(isFallback&&needsFallbackDraw)){raf=requestAnimationFrame(render)}else if(wind&&marks){windTimer=setTimeout(()=>{windTimer=0;start()},Math.max(30,560-(now-lastWind)))}}
+function start(){if(windTimer){clearTimeout(windTimer);windTimer=0}if(visible&&!raf&&!contextLost){lastTime=performance.now();raf=requestAnimationFrame(render)}}
+function syncVisibility(){visible=parentVisible&&!document.hidden;canvas.dataset.active=String(visible);if(!visible){if(raf)cancelAnimationFrame(raf);raf=0;if(windTimer)clearTimeout(windTimer);windTimer=0;releasePointer()}else{resize();start()}parent.postMessage({type:'ginter-sand-state',visible,frame},location.origin)}
+window.addEventListener('resize',()=>{resize();releasePointer();start()});document.addEventListener('visibilitychange',syncVisibility);window.addEventListener('message',event=>{if(event.source!==parent||event.origin!==location.origin)return;if(event.data?.type==='ginter-sand-visibility'){parentVisible=Boolean(event.data.visible);syncVisibility()}});canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;canvas.dataset.renderer='context-lost';if(raf)cancelAnimationFrame(raf);raf=0;releasePointer();say('The scene is resting. Reload to restore the view.')});canvas.addEventListener('webglcontextrestored',()=>{contextLost=false;try{initGL();textureDirty=true;resize();start()}catch(error){initFallback(error.message);start()}});
+try{initGL()}catch(error){initFallback(error.message)}updateStats();resize();syncVisibility();parent.postMessage({type:'ginter-sand-ready',renderer:canvas.dataset.renderer},location.origin);window.addEventListener('pagehide',()=>{if(raf)cancelAnimationFrame(raf);raf=0;if(windTimer)clearTimeout(windTimer);windTimer=0});
+})();
+</script>
+</body>
+</html>

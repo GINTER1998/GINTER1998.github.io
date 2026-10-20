@@ -31,3 +31,14 @@ nav{font-size:12px}nav a{padding:14px 0}.filter-bar button,.photo-filters button
 @media(max-width:600px){.ocean-hero{height:80svh;min-height:500px;max-height:800px;scroll-margin-top:100px}.ocean-identity,.ocean-intro{left:6%}.ocean-identity{top:24px;max-width:64%}.ocean-identity p{font-size:7px;letter-spacing:.11em}.ocean-identity h1{font-size:26px}.ocean-intro{bottom:24px;max-width:70%}.ocean-intro>p{font-size:11px;margin-bottom:8px}.ocean-enter{font-size:9px;gap:24px}.ocean-shade{background:linear-gradient(180deg,#03080c25,transparent 23%,transparent 60%,#03080c70)}}
 @media(max-width:360px){.ocean-identity h1{font-size:22px}.ocean-identity p{font-size:6.5px}}
 @media(max-width:600px){.ocean-shade{background:linear-gradient(180deg,#03080c60,transparent 30%,transparent 60%,#03080c70)}}
+
+/* Landscape tabs sit below the studio name, clear of the scene's own tools. */
+.scene-switch{position:absolute;top:122px;left:3%;z-index:3;display:flex;gap:5px;max-width:calc(100% - 45px)}
+.scene-switch button{min-height:44px;padding:10px 15px;border:1px solid #cad6df50;background:#09141f70;color:#d2dce3;font-size:9px;letter-spacing:.09em;backdrop-filter:blur(14px)}
+.scene-switch button:hover{background:#65748055;color:#fff}
+.scene-switch button[aria-pressed=true]{border-color:#d8e2e6a0;background:#c8d5dd22;color:#fff}
+.scene-switch button:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.ocean-hero[data-scene=sand]{background:#0b1721}
+.ocean-hero[data-scene=sand] .ocean-shade{background:linear-gradient(180deg,#03080c25,transparent 30%,transparent 72%,#03080c48)}
+@media(max-width:800px){.scene-switch{left:4%;top:112px}}
+@media(max-width:600px){.scene-switch{left:6%;top:105px;gap:4px}.scene-switch button{font-size:8px;padding:9px 11px;letter-spacing:.055em}.ocean-hero[data-scene=sand] .ocean-intro{max-width:52%}.ocean-hero[data-scene=sand] .ocean-enter{gap:15px}.ocean-hero[data-scene=sand] .ocean-shade{background:linear-gradient(180deg,#03080c20,transparent 30%,transparent 65%,#03080c60)}}
