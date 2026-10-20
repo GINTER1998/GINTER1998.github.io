@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
  -->
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111820"><meta name="description" content="A live sunset ocean for GINTER STUDIO. Explore changing waves, light, and a floating camera."><title>Ocean — GINTER STUDIO</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#131c24;color:#f8f2e8;font-family:Arial,Helvetica,sans-serif}body{background:radial-gradient(ellipse at 52% 46%,#ebd0a1 0%,transparent 28%),linear-gradient(#626a7a 0%,#c7ab95 46%,#a28c72 47%,#38444b 49%,#172630 100%)}button,select,input{font:inherit}button,a,select,input{touch-action:manipulation}button{color:inherit;cursor:pointer}button:disabled{opacity:.4;cursor:wait}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #f9e9d0;outline-offset:4px}#c{position:fixed;inset:0;display:block;width:100%;height:100%;outline:0;cursor:grab;touch-action:pan-y}#c.dragging{cursor:grabbing}#c:focus-visible{outline:1px solid #ffffff45;outline-offset:-4px}.ocean-brand{position:fixed;top:28px;left:30px;z-index:2;font-size:20px;letter-spacing:-.04em;text-decoration:none;color:inherit;text-shadow:0 1px 12px #0006}.ocean-brand span{display:block;font-size:8px;letter-spacing:.13em;margin-top:8px}#hud{position:fixed;right:30px;top:30px;z-index:2;text-align:right;font-size:9px;letter-spacing:.1em;line-height:1.8;text-shadow:0 1px 8px #0009;pointer-events:none}#fps{display:block}#hud .help{display:block;color:#f0e7dad0;font-size:8px;margin-top:5px}#loading{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;font-size:9px;letter-spacing:.16em;pointer-events:none;text-shadow:0 1px 8px #0009}.loader-mark{font-size:44px;font-weight:200;animation:turn 8s linear infinite}body[data-state=ready] #loading,body[data-state=error] #loading,body[data-state=lost] #loading{display:none}@keyframes turn{to{transform:rotate(360deg)}}.ocean-toolbar{position:fixed;right:30px;bottom:30px;z-index:3;display:flex;gap:7px}.ocean-toolbar button,#err>button{min-height:44px;background:#0c192662;border:1px solid #eee4d24d;padding:12px 16px;font-size:9px;letter-spacing:.07em;backdrop-filter:blur(12px)}.ocean-toolbar button:hover,.ocean-toolbar button[aria-pressed=true]{background:#eadfc531}.ocean-toolbar button[aria-pressed=true]{border-color:#e4d3ae}.ocean-toolbar #look{display:none}#panel{position:fixed;right:30px;top:82px;z-index:4;width:330px;max-width:calc(100vw - 32px);max-height:calc(100svh - 165px);overflow-y:auto;padding:24px;background:#0a1824e8;border:1px solid #e1d9c734;backdrop-filter:blur(20px);scrollbar-width:thin;scrollbar-color:#c6bca2 #172632}#panel.hidden{display:none}.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:20px}.panel-heading h2{font-weight:400;font-size:15px;letter-spacing:.05em;margin:0}.panel-heading button{border:0;background:transparent;color:inherit;font-size:23px;min-height:32px;min-width:32px}.panel-intro{font-size:11px;line-height:1.7;color:#b5bdc5;margin:7px 0 23px}#sliders label{display:grid;grid-template-columns:1fr 98px 28px;gap:9px;align-items:center;margin:15px 0;font-size:11px;color:#e0ded6}#sliders input{width:98px;accent-color:#e2c38c;height:20px}#sliders output{text-align:right;font-variant-numeric:tabular-nums;font-size:9px;color:#afbac0}.option{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;border-top:1px solid #b9c1c725;padding-top:14px;margin-top:16px}.option input{accent-color:#dbbd89;width:16px;height:16px}.option select{background:#23333f;color:#eee4d7;border:1px solid #81909a50;padding:7px;font-size:10px}#camera-status,#render-status{font-size:9px;line-height:1.7;color:#a1b2bd;margin:16px 0 0}.panel-instructions{border-top:1px solid #b9c1c725;padding-top:16px;margin-top:16px;font-size:10px;line-height:1.9;color:#d0d5d5}.credit{font-size:9px;line-height:1.8;color:#8f9fa9;margin-top:20px}.credit a{color:inherit;text-underline-offset:3px}#touch-pad{display:none}#err{display:none;position:fixed;inset:0;z-index:5;padding:10%;justify-content:center;align-items:start;flex-direction:column;background:#07101868;backdrop-filter:blur(8px)}#err h1{font-weight:400;font-size:clamp(32px,6vw,64px);letter-spacing:-.05em;margin:0 0 20px}#err p{font-size:13px;line-height:1.9;max-width:470px;color:#e0e4e4}#err details{font-size:11px;margin:15px 0 24px;max-width:100%;color:#afbec4}#err pre{max-width:100%;white-space:pre-wrap;word-break:break-word;font-size:10px}body[data-state=error] #c,body[data-state=lost] #c{opacity:0}body.embedded .ocean-brand{display:none}body.look-mode #c{touch-action:none}#touch-pad button{touch-action:none}body[data-state=error] .ocean-toolbar,body[data-state=lost] .ocean-toolbar{display:none}
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111820"><meta name="description" content="Live ocean studies for GINTER STUDIO. Explore changing waves, light, and a floating camera."><title>Ocean — GINTER STUDIO</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#131c24;color:#f8f2e8;font-family:Arial,Helvetica,sans-serif}body{background:radial-gradient(ellipse at 52% 46%,#ebd0a1 0%,transparent 28%),linear-gradient(#626a7a 0%,#c7ab95 46%,#a28c72 47%,#38444b 49%,#172630 100%)}button,select,input{font:inherit}button,a,select,input{touch-action:manipulation}button{color:inherit;cursor:pointer}button:disabled{opacity:.4;cursor:wait}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #f9e9d0;outline-offset:4px}#c{position:fixed;inset:0;display:block;width:100%;height:100%;outline:0;cursor:grab;touch-action:pan-y}#c.dragging{cursor:grabbing}#c:focus-visible{outline:1px solid #ffffff45;outline-offset:-4px}.ocean-brand{position:fixed;top:28px;left:30px;z-index:2;font-size:20px;letter-spacing:-.04em;text-decoration:none;color:inherit;text-shadow:0 1px 12px #0006}.ocean-brand span{display:block;font-size:8px;letter-spacing:.13em;margin-top:8px}#hud{position:fixed;right:30px;top:30px;z-index:2;text-align:right;font-size:9px;letter-spacing:.1em;line-height:1.8;text-shadow:0 1px 8px #0009;pointer-events:none}#fps{display:block}#hud .help{display:block;color:#f0e7dad0;font-size:8px;margin-top:5px}#loading{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;font-size:9px;letter-spacing:.16em;pointer-events:none;text-shadow:0 1px 8px #0009}.loader-mark{font-size:44px;font-weight:200;animation:turn 8s linear infinite}body[data-state=ready] #loading,body[data-state=error] #loading,body[data-state=lost] #loading{display:none}@keyframes turn{to{transform:rotate(360deg)}}.ocean-toolbar{position:fixed;right:30px;bottom:30px;z-index:3;display:flex;gap:7px}.ocean-toolbar button,#err>button{min-height:44px;background:#0c192662;border:1px solid #eee4d24d;padding:12px 16px;font-size:9px;letter-spacing:.07em;backdrop-filter:blur(12px)}.ocean-toolbar button:hover,.ocean-toolbar button[aria-pressed=true]{background:#eadfc531}.ocean-toolbar button[aria-pressed=true]{border-color:#e4d3ae}.ocean-toolbar #look{display:none}#panel{position:fixed;right:30px;top:82px;z-index:4;width:330px;max-width:calc(100vw - 32px);max-height:calc(100svh - 165px);overflow-y:auto;padding:24px;background:#0a1824e8;border:1px solid #e1d9c734;backdrop-filter:blur(20px);scrollbar-width:thin;scrollbar-color:#c6bca2 #172632}#panel.hidden{display:none}.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:20px}.panel-heading h2{font-weight:400;font-size:15px;letter-spacing:.05em;margin:0}.panel-heading button{border:0;background:transparent;color:inherit;font-size:23px;min-height:32px;min-width:32px}.panel-intro{font-size:11px;line-height:1.7;color:#b5bdc5;margin:7px 0 23px}#sliders label{display:grid;grid-template-columns:1fr 98px 28px;gap:9px;align-items:center;margin:15px 0;font-size:11px;color:#e0ded6}#sliders input{width:98px;accent-color:#e2c38c;height:20px}#sliders output{text-align:right;font-variant-numeric:tabular-nums;font-size:9px;color:#afbac0}.option{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;border-top:1px solid #b9c1c725;padding-top:14px;margin-top:16px}.option input{accent-color:#dbbd89;width:16px;height:16px}.option select{background:#23333f;color:#eee4d7;border:1px solid #81909a50;padding:7px;font-size:10px}#camera-status,#render-status{font-size:9px;line-height:1.7;color:#a1b2bd;margin:16px 0 0}.panel-instructions{border-top:1px solid #b9c1c725;padding-top:16px;margin-top:16px;font-size:10px;line-height:1.9;color:#d0d5d5}.credit{font-size:9px;line-height:1.8;color:#8f9fa9;margin-top:20px}.credit a{color:inherit;text-underline-offset:3px}#touch-pad{display:none}#err{display:none;position:fixed;inset:0;z-index:5;padding:10%;justify-content:center;align-items:start;flex-direction:column;background:#07101868;backdrop-filter:blur(8px)}#err h1{font-weight:400;font-size:clamp(32px,6vw,64px);letter-spacing:-.05em;margin:0 0 20px}#err p{font-size:13px;line-height:1.9;max-width:470px;color:#e0e4e4}#err details{font-size:11px;margin:15px 0 24px;max-width:100%;color:#afbec4}#err pre{max-width:100%;white-space:pre-wrap;word-break:break-word;font-size:10px}body[data-state=error] #c,body[data-state=lost] #c{opacity:0}body.embedded .ocean-brand{display:none}body.look-mode #c{touch-action:none}#touch-pad button{touch-action:none}body[data-state=error] .ocean-toolbar,body[data-state=lost] .ocean-toolbar{display:none}
 @media(max-width:700px){.ocean-brand{left:24px;top:24px;font-size:17px}.ocean-brand span{font-size:7px}#hud{top:auto;bottom:24px;right:22px;font-size:8px}#hud .help{display:none}.ocean-toolbar{right:18px;top:24px;bottom:auto;max-width:120px;flex-wrap:wrap;justify-content:end;gap:5px}.ocean-toolbar button{min-height:38px;padding:8px 9px;font-size:7px}.ocean-toolbar #look{display:block}.ocean-toolbar #reset{order:3}.ocean-toolbar #look{order:4}.ocean-toolbar #settings{order:2}.ocean-toolbar #pause{order:1}#panel{top:116px;right:16px;padding:20px;max-height:calc(100svh - 150px)}#touch-pad{display:grid;position:fixed;right:22px;bottom:60px;z-index:3;grid-template-columns:repeat(3,34px);grid-template-rows:repeat(2,34px);gap:4px}#touch-pad button{background:#0c192665;border:1px solid #dfd5bf40;color:#e2e0d6;font-size:16px;padding:0}#touch-pad button:first-child{grid-column:2}#touch-pad button:nth-child(2){grid-column:1;grid-row:2}#touch-pad button:nth-child(3){grid-column:2;grid-row:2}#touch-pad button:nth-child(4){grid-column:3;grid-row:2}#touch-pad button:active{background:#eadfc555}body:not(.embedded) #hud{left:24px;right:auto}body:not(.embedded) #touch-pad{bottom:24px}#err{padding:9%}#err p{font-size:12px}.embedded #hud{font-size:7px;letter-spacing:.05em}}
 @media(prefers-reduced-motion:reduce){.loader-mark{animation:none}}
 #hud{background:#09172460;border:1px solid #f0e1c71c;padding:8px 11px;backdrop-filter:blur(8px)}
@@ -37,22 +37,26 @@ SOFTWARE.
 .ocean-toolbar button{white-space:nowrap}
 @media(max-width:700px){.ocean-toolbar button{font-size:9px}}
 .ocean-toolbar button{background:#0c19269c}.ocean-toolbar button:hover{background:#34404fc9}.ocean-toolbar button[aria-pressed=true]{background:#283a4ad9}
-/* Four saved ocean scenes, separate from camera and playback controls. */
+/* Saved ocean scenes, separate from camera and playback controls. */
 .ocean-presets{position:fixed;right:30px;bottom:84px;z-index:3;display:flex;gap:7px}
 .ocean-presets button{min-height:44px;background:#0c19269c;border:1px solid #eee4d24d;padding:11px 13px;font-size:9px;letter-spacing:.05em;white-space:nowrap;backdrop-filter:blur(12px)}
 .ocean-presets button:hover{background:#34404fc9}
 .ocean-presets button[aria-pressed=true]{background:#283a4ad9;border-color:#e4d3ae}
 body[data-state=error] .ocean-presets,body[data-state=lost] .ocean-presets{display:none}
 @media(max-width:700px){.ocean-presets{right:18px;top:198px;bottom:auto;display:grid;grid-template-columns:1fr 1fr;width:154px;gap:5px}.ocean-presets button{min-height:44px;padding:8px 5px;font-size:8px;letter-spacing:.015em}}
+
+.ink-palette-row{display:none}
+body[data-scene="ink"] .ink-palette-row{display:flex}
+@media(max-width:700px){.ocean-presets button:last-child{grid-column:1/-1}}
 </style></head>
 <body data-state="loading">
 <canvas id="c" tabindex="0" aria-label="Interactive ocean. Drag the mouse to look around. W A S D move; E and Q change eye height. Press H for settings."></canvas>
-<a class="ocean-brand" href="index.html#work">GINTER STUDIO <span>OCEAN STUDY / 01</span></a>
+<a class="ocean-brand" href="index.html#work">GINTER STUDIO <span>OCEAN STUDIES</span></a>
 <div id="hud"><span id="fps">FORMING THE HORIZON</span><span class="help">DRAG TO LOOK · WASD TO MOVE</span></div>
 <div id="loading" role="status"><span class="loader-mark">*</span><span>FORMING THE HORIZON</span></div>
-<div class="ocean-presets" role="group" aria-label="Ocean scenes"><button type="button" data-ocean-preset="sunset" aria-pressed="true" disabled>SUNSET</button><button type="button" data-ocean-preset="aerial" aria-pressed="false" disabled>BLUE AERIAL</button><button type="button" data-ocean-preset="dusk" aria-pressed="false" disabled>SAVED DUSK</button><button type="button" data-ocean-preset="ink" aria-pressed="false" disabled>INK SEA</button></div>
+<div class="ocean-presets" role="group" aria-label="Ocean scenes"><button type="button" data-ocean-preset="aerial" aria-pressed="false" disabled>BLUE AERIAL</button><button type="button" data-ocean-preset="dusk" aria-pressed="true" disabled>SAVED DUSK</button><button type="button" data-ocean-preset="ink" aria-pressed="false" disabled>INK SEA</button></div>
 <div class="ocean-toolbar" role="group" aria-label="Ocean controls"><button id="pause" type="button" disabled aria-pressed="false">PAUSE Ⅱ</button><button id="reset" type="button" disabled aria-label="Reset view">RESET ↺</button><button id="settings" type="button" disabled aria-expanded="false" aria-controls="panel">SETTINGS +</button><button id="look" type="button" aria-pressed="false">LOOK ↔</button></div>
-<section id="panel" class="hidden" aria-label="Ocean settings"><div class="panel-heading"><h2>YOUR HORIZON</h2><button id="close-settings" type="button" aria-label="Close ocean settings">×</button></div><p class="panel-intro">Make yourself at home on the water.</p><div id="sliders"></div><label class="option"><span>Float with the waves</span><input id="float-mode" type="checkbox" checked></label><label class="option"><span>Image detail</span><select id="quality"><option value="balanced">Balanced</option><option value="high">High</option></select></label><p id="camera-status">Camera settling…</p><p id="render-status"></p><p class="panel-instructions">Drag to look · WASD to move<br>E / Q to raise or lower · Shift to move faster<br>Space to pause · H for settings · R to reset</p><p class="credit">Ocean engine adapted from <a href="https://github.com/Noniv/web-ocean" target="_blank" rel="noopener">Noniv / Maksymilian Dendura</a> · MIT</p></section>
+<section id="panel" class="hidden" aria-label="Ocean settings"><div class="panel-heading"><h2>YOUR HORIZON</h2><button id="close-settings" type="button" aria-label="Close ocean settings">×</button></div><p class="panel-intro">Make yourself at home on the water.</p><label class="option ink-palette-row" for="ink-palette"><span>Ink palette</span><select id="ink-palette" aria-label="Ink palette"><option value="0">INDIGO</option><option value="1">PETROL</option><option value="2">GRAPHITE</option></select></label><div id="sliders"></div><label class="option"><span>Float with the waves</span><input id="float-mode" type="checkbox" checked></label><label class="option"><span>Image detail</span><select id="quality"><option value="balanced">Balanced</option><option value="high">High</option></select></label><p id="camera-status">Camera settling…</p><p id="render-status"></p><p class="panel-instructions">Drag to look · WASD to move<br>E / Q to raise or lower · Shift to move faster<br>Space to pause · H for settings · R to reset</p><p class="credit">Ocean engine adapted from <a href="https://github.com/Noniv/web-ocean" target="_blank" rel="noopener">Noniv / Maksymilian Dendura</a> · MIT</p></section>
 <div id="touch-pad" role="group" aria-label="Move camera"><button data-move="KeyW" aria-label="Move forward">↑</button><button data-move="KeyA" aria-label="Move left">←</button><button data-move="KeyS" aria-label="Move backward">↓</button><button data-move="KeyD" aria-label="Move right">→</button></div>
 <div id="err" role="status"><h1>A still horizon.</h1><p>The live ocean needs a browser with WebGPU. You can continue exploring the portfolio, or open this scene in a WebGPU-enabled browser.</p><a class="fallback-link" href="index.html#work" target="_top">VIEW THE PORTFOLIO ↗</a><details><summary>Technical details</summary><pre id="error-detail"></pre></details><button type="button" onclick="location.reload()">TRY AGAIN ↻</button></div>
 <script type="module">// GINTER STUDIO adaptation of Noniv/web-ocean. Full MIT license is embedded above.
@@ -1273,10 +1277,8 @@ fn foamPattern(xz: vec2f, t: f32) -> f32 {
 
 @fragment fn fs(in: VSOut) -> @location(0) vec4f {
   let xz = in.xz;
-  var s=vec2f(0.0);
-  var sunSlope=vec2f(0.0);
-  var sunExtraCov=vec3f(0.0);
-  var jxx=0.0;
+  var s = vec2f(0.0);
+  var jxx = 0.0;
   var jzz = 0.0;
   var jxz = 0.0;
   var cov = vec3f(0.0);
@@ -1288,9 +1290,6 @@ fn foamPattern(xz: vec2f, t: f32) -> f32 {
     let gk = mix(1.0, gust, select(0.0, select(0.5, 1.0, c >= 4u), c >= 3u));
     let dv = textureSample(derivTex, sampR, uv, c) * gk;
     let mv = textureSample(momTex, sampR, uv, c) * (gk * gk);
-    let sw=select(1.0,select(1.0,select(0.35,0.08,c>=4u),c>=3u),F.windP[1].w>1.5);
-    sunSlope+=dv.xy*sw;
-    sunExtraCov+=(1.0-sw*sw)*vec3f(dv.x*dv.x,dv.y*dv.y,dv.x*dv.y);
     let av = textureSample(dispTex, sampR, uv, c) * gk;
     s += dv.xy;
     jxx += dv.z;
@@ -1341,16 +1340,7 @@ fn foamPattern(xz: vec2f, t: f32) -> f32 {
   let Fh = fresnelWater(dot(V, Hv));
   var spec = sunE * (Fh * Dm * G / (4.0 * max(V.y, 0.02))) * step(0.0, Ld.y);
   if(F.windP[1].w>0.5&&F.windP[1].w<1.5){spec*=0.65;}
-  if(F.windP[1].w>1.5){
-    let sunSl=vec2f(sunSlope.x/jx,sunSlope.y/jz);
-    var sunCov=cov+sunExtraCov;sunCov.x+=0.0015;sunCov.y+=0.0015;
-    let ds=hs-sunSl;
-    let sd=max(sunCov.x*sunCov.y-sunCov.z*sunCov.z,1e-10);
-    let se=(ds.x*ds.x*sunCov.y+ds.y*ds.y*sunCov.x-2.0*ds.x*ds.y*sunCov.z)/sd;
-    let sp=exp(-0.5*se)/(2.0*PI*sqrt(sd));
-    let sg=1.0/(1.0+lambdaSmith(V,sunCov)+lambdaSmith(Ld,sunCov));
-    spec=sunE*(Fh*sp/max(hy2*hy2,1e-6)*sg/(4.0*max(V.y,0.02)))*step(0.0,Ld.y);
-  }
+  
 
   // ---- sky reflection ----
   // At grazing angles the *visible* facets are biased towards the viewer (projected-area
@@ -1444,8 +1434,8 @@ fn foamPattern(xz: vec2f, t: f32) -> f32 {
   let fogCol = skyAtmo(hz);
   col = col * T + fogCol * (1.0 - T);
   let specAfter=max(spec,vec3f(0.0))*T*(1.0-clamp(foamMask*0.95,0.0,1.0));
-  let glintTag=clamp(dot(specAfter,vec3f(0.2126,0.7152,0.0722))/max(dot(col,vec3f(0.2126,0.7152,0.0722)),1e-5),0.0,1.0);
-  return vec4f(col,glintTag);
+  let directLight=dot(specAfter,vec3f(0.2126,0.7152,0.0722));
+  return vec4f(col,directLight);
 }
 `;
 
@@ -1582,24 +1572,22 @@ fn agxLook(v: vec3f, sat: f32, power: f32) -> vec3f {
 }
 fn ign(p: vec2f) -> f32 { return fract(52.9829189 * fract(dot(p, vec2f(0.06711056, 0.00583715)))); }
 
-// Saved gray-ink look, extracted unchanged from pre-biolum snapshot.
-// Requires existing VO, hdr, bloom, samp, U in original COMPOSITE module.
-// Call only for gray mode (U.p.w > 1.5).
-// HDR alpha: sky=-1-cloudOpacity, water=direct-sun-specular fraction.
-
+// Cool INK SEA: Indigo / Teal / Graphite. Include in original COMPOSITE.
+// Requires existing VO, hdr, bloom, samp, U; no additional bindings.
+// U.q.z = palette 0 / 1 / 2. U.p.x = exposure.
+// HDR alpha: SKY=-1-cloudOpacity, WATER=absolute direct-specular luminance.
+// Broad brush filtering never filters the sunlight metadata.
 const ART_LUMA: vec3f = vec3f(0.2126, 0.7152, 0.0722);
-const ART_INK: vec3f = vec3f(0.125490, 0.129412, 0.141176);       // #202124
-const ART_DARK_PLANE: vec3f = vec3f(0.160784, 0.164706, 0.184314);
-const ART_WAVE: vec3f = vec3f(0.188235, 0.192157, 0.219608);      // #303138
-const ART_CREST: vec3f = vec3f(0.215686, 0.223529, 0.254902);     // #373941
-const ART_SKY: vec3f = vec3f(0.219608, 0.227451, 0.254902);       // #383a41
-const ART_CLOUD: vec3f = vec3f(0.160784, 0.164706, 0.184314);     // #292a2f
-const ART_CLOUD_EDGE: vec3f = vec3f(0.180392, 0.192157, 0.215686); // #2e3137
-const ART_ORANGE: vec3f = vec3f(1.0, 0.360784, 0.074510);       // #ff5c13
-const ART_BURNT: vec3f = vec3f(0.76, 0.230, 0.044);
 
 fn artLuminance(color: vec3f) -> f32 {
-  return max(dot(color, ART_LUMA), 0.00001);
+  return max(dot(color, ART_LUMA), 0.0);
+}
+
+fn artPalette(indigo: vec3f, teal: vec3f, graphite: vec3f) -> vec3f {
+  var color = indigo;
+  if (U.q.z > 0.5) { color = teal; }
+  if (U.q.z > 1.5) { color = graphite; }
+  return color;
 }
 
 fn artHash(point: vec2f) -> f32 {
@@ -1608,102 +1596,99 @@ fn artHash(point: vec2f) -> f32 {
   return fract((q.x + q.y) * q.z);
 }
 
-fn artNoise(point: vec2f) -> f32 {
-  let cell = floor(point);
-  let local = fract(point);
-  let weight = local * local * (vec2f(3.0) - 2.0 * local);
-  let lower = mix(artHash(cell), artHash(cell + vec2f(1.0, 0.0)), weight.x);
-  let upper = mix(artHash(cell + vec2f(0.0, 1.0)), artHash(cell + vec2f(1.0, 1.0)), weight.x);
-  return mix(lower, upper, weight.y);
-}
-
 fn artFetch(position: vec2f, dimensions: vec2f) -> vec4f {
   let coordinate = vec2i(clamp(position, vec2f(0.0), dimensions - vec2f(1.0)));
   return textureLoad(hdr, coordinate, 0);
 }
 
-// The stroke tangent comes from the actual wave lighting gradient, rather
-// than a screen-horizontal wave pattern. No time-varying noise is introduced.
-fn artBrushed(position: vec2f, dimensions: vec2f, center: vec4f) -> vec4f {
-  let left = artLuminance(artFetch(position - vec2f(2.0, 0.0), dimensions).rgb);
-  let right = artLuminance(artFetch(position + vec2f(2.0, 0.0), dimensions).rgb);
-  let above = artLuminance(artFetch(position - vec2f(0.0, 2.0), dimensions).rgb);
-  let below = artLuminance(artFetch(position + vec2f(0.0, 2.0), dimensions).rgb);
+// Subtract the explicitly measured direct sun from the base paint response;
+// glints then retain their own real energy/shape rather than lifting a blob of
+// surrounding sea into a flat light-colored patch.
+fn artBaseLight(sampleValue: vec4f) -> f32 {
+  let directSun = max(sampleValue.a, 0.0);
+  return max(artLuminance(sampleValue.rgb) - directSun * 0.92, 0.0);
+}
+
+fn artPaintLight(position: vec2f, dimensions: vec2f, center: vec4f) -> f32 {
+  let left = artBaseLight(artFetch(position - vec2f(2.0, 0.0), dimensions));
+  let right = artBaseLight(artFetch(position + vec2f(2.0, 0.0), dimensions));
+  let above = artBaseLight(artFetch(position - vec2f(0.0, 2.0), dimensions));
+  let below = artBaseLight(artFetch(position + vec2f(0.0, 2.0), dimensions));
   let gradient = vec2f(right - left, below - above);
-  let angle = artNoise(position * 0.0043) * 6.2831853;
-  var tangent = vec2f(cos(angle), sin(angle));
+  var tangent = vec2f(0.88, 0.47);
   if (dot(gradient, gradient) > 0.0000001) {
     tangent = normalize(vec2f(-gradient.y, gradient.x));
   }
   let normal = vec2f(-tangent.y, tangent.x);
-  let radius = clamp(min(dimensions.x, dimensions.y) * 0.009, 3.0, 9.0);
+  let radius = clamp(min(dimensions.x, dimensions.y) * 0.0055, 2.0, 5.0);
   let centerIsSky = center.a < -0.5;
-  let centerLog = log2(artLuminance(center.rgb) + 0.003);
-  var total = center * 2.5;
-  var totalWeight = 2.5;
-  for (var tapIndex = 0u; tapIndex < 8u; tapIndex++) {
+  let base = artBaseLight(center);
+  let baseLog = log2(base + 0.006);
+  var total = base * 3.0;
+  var totalWeight = 3.0;
+  for (var tapIndex = 0u; tapIndex < 6u; tapIndex++) {
     let side = select(-1.0, 1.0, (tapIndex & 1u) != 0u);
-    let ring = tapIndex >> 1u;
+    let pair = tapIndex >> 1u;
     var offset: vec2f;
-    if (ring == 0u) { offset = tangent * (radius * side); }
-    else if (ring == 1u) { offset = tangent * (radius * 0.45 * side); }
-    else if (ring == 2u) { offset = normal * (radius * 0.35 * side); }
-    else { offset = (tangent * 0.65 + normal * 0.28) * (radius * side); }
+    if (pair == 0u) { offset = tangent * (radius * side); }
+    else if (pair == 1u) { offset = tangent * (radius * 0.45 * side); }
+    else { offset = normal * (radius * 0.35 * side); }
     let sampleValue = artFetch(position + offset, dimensions);
+    let light = artBaseLight(sampleValue);
+    let difference = abs(log2(light + 0.006) - baseLog);
     let sameSurface = (sampleValue.a < -0.5) == centerIsSky;
-    let logDifference = abs(log2(artLuminance(sampleValue.rgb) + 0.003) - centerLog);
-    let tagDifference = abs(sampleValue.a - center.a);
-    let edgeWeight = exp(-logDifference * 0.75 - min(tagDifference, 1.0) * 0.75);
-    let weight = select(0.0, edgeWeight, sameSurface);
-    total += sampleValue * weight;
+    let weight = select(0.0, exp(-difference * 0.95), sameSurface);
+    total += light * weight;
     totalWeight += weight;
   }
-  return total / totalWeight;
+  return mix(total / totalWeight, base, 0.30);
 }
 
-fn artSeaPalette(light: f32) -> vec3f {
-  // Broad matte tonal pools, with narrow softened transitions between paints.
-  var color = mix(ART_INK, ART_DARK_PLANE, smoothstep(0.25, 0.31, light));
-  color = mix(color, ART_WAVE, smoothstep(0.48, 0.54, light));
-  color = mix(color, ART_CREST, smoothstep(0.73, 0.79, light));
-  return color;
+fn artSunEnergy(position: vec2f, dimensions: vec2f, center: vec4f) -> f32 {
+  // Only a one-pixel optical footprint. No six-pixel alpha averaging, expanded
+  // solar mask, synthetic reflection stripe, or thresholded orange road.
+  var energy = max(center.a, 0.0) * 0.84;
+  energy += max(artFetch(position + vec2f(1.0, 0.0), dimensions).a, 0.0) * 0.04;
+  energy += max(artFetch(position - vec2f(1.0, 0.0), dimensions).a, 0.0) * 0.04;
+  energy += max(artFetch(position + vec2f(0.0, 1.0), dimensions).a, 0.0) * 0.04;
+  energy += max(artFetch(position - vec2f(0.0, 1.0), dimensions).a, 0.0) * 0.04;
+  return energy;
 }
 
 fn inkComposite(in: VO) -> vec4f {
   let dimensions = vec2f(textureDimensions(hdr));
   let center = artFetch(in.pos.xy, dimensions);
-  let brushed = artBrushed(in.pos.xy, dimensions, center);
   let exposure = max(U.p.x, 0.05);
-  // Retain existing auto-layout bindings1/2 with a negligible, bounded neutral
-  // tonal contribution; bright bloom never directly colors or expands glints.
-  let softLight = textureSampleLevel(bloom, samp, in.uv, 0.0).rgb * 0.125;
-  let luminance = artLuminance(brushed.rgb) * exposure +
-    min(artLuminance(softLight), 0.25) * max(U.p.y, 0.0) * 0.001;
-  let light = clamp((log2(luminance + 0.001) + 6.0) / 6.0, 0.0, 1.0);
+  let physicalLight = artLuminance(center.rgb) * exposure;
+  let fineNoise = artHash(floor(in.pos.xy)) - 0.5;
   var color: vec3f;
   if (center.a < -0.5) {
-    let cloudOpacity = clamp(-brushed.a - 1.0, 0.0, 1.0);
-    let cloudPaint = mix(ART_CLOUD_EDGE, ART_CLOUD, smoothstep(0.20, 0.85, cloudOpacity));
-    color = mix(ART_SKY, cloudPaint, smoothstep(0.025, 0.70, cloudOpacity));
-    // A small neutral lighting response keeps the sky from feeling like a
-    // separate opaque overlay; it can never become orange or luminous white.
-    color += vec3f((light - 0.5) * 0.008);
+    let sky = artPalette(vec3f(0.305, 0.332, 0.414), vec3f(0.270, 0.347, 0.373), vec3f(0.310, 0.335, 0.378));
+    let cloud = artPalette(vec3f(0.190, 0.220, 0.302), vec3f(0.145, 0.235, 0.263), vec3f(0.205, 0.230, 0.272));
+    let cloudOpacity = clamp(-center.a - 1.0, 0.0, 1.0);
+    let lighting = physicalLight / (physicalLight + 0.50);
+    color = mix(sky, cloud, smoothstep(0.02, 0.90, cloudOpacity) * 0.82);
+    color += vec3f((lighting - 0.45) * 0.037);
   } else {
-    color = artSeaPalette(light);
-    let glintTag = clamp(mix(brushed.a, max(center.a, 0.0), 0.18), 0.0, 1.0);
-    let inkCoverage = smoothstep(0.12, 0.64, pow(glintTag, 0.72));
-    let orange = mix(ART_BURNT, ART_ORANGE, smoothstep(0.14, 0.70, glintTag));
-    color = mix(color, orange, inkCoverage);
+    let deep = artPalette(vec3f(0.043137, 0.078431, 0.149020), vec3f(0.027451, 0.121569, 0.160784), vec3f(0.082353, 0.098039, 0.121569));
+    let wave = artPalette(vec3f(0.105882, 0.188235, 0.301961), vec3f(0.101961, 0.262745, 0.298039), vec3f(0.223529, 0.262745, 0.309804));
+    let light = artPaintLight(in.pos.xy, dimensions, center) * exposure;
+    let response = pow(light / (light + 0.20), 0.80);
+    // Soft knees suggest layered paint while preserving continuous wave detail.
+    let paintResponse = response * 0.70 + smoothstep(0.22, 0.72, response) * 0.30;
+    color = mix(deep, wave, paintResponse);
+    let energy = artSunEnergy(in.pos.xy, dimensions, center) * exposure;
+    let sunResponse = pow(1.0 - exp(-energy * 0.55), 0.93);
+    let silver = artPalette(vec3f(0.595, 0.690, 0.750), vec3f(0.585, 0.725, 0.745), vec3f(0.675, 0.720, 0.750));
+    // Tiny pressure variation roughens only actual physical glint edges.
+    let pressure = clamp(sunResponse * (1.0 + fineNoise * 0.035), 0.0, 1.0);
+    color = mix(color, silver, pressure * 0.88);
   }
-
-  // Static, isotropic paper tooth; never animated frame-noise or horizontal
-  // stripe bands. Grain is kept below a few display code values.
-  let fineGrain = artHash(floor(in.pos.xy)) - 0.5;
-  let fiberGrain = artNoise(in.pos.xy * 0.37) - 0.5;
-  let grainStrength = select(0.75, clamp(U.q.w, 0.0, 2.0), U.q.w > 0.0);
-  let grain = (fineGrain * 0.60 + fiberGrain * 0.40) * (0.010 * grainStrength);
-  color *= 1.0 + grain;
-  color += vec3f(grain * 0.22);
+  // Keep the existing auto-layout bindings alive without a perceptible bloom
+  // halo or a broad low-frequency sunlight contribution.
+  let softLight = textureSampleLevel(bloom, samp, in.uv, 0.0).rgb * 0.125;
+  color += vec3f(min(artLuminance(softLight), 0.2) * max(U.p.y, 0.0) * 0.0001);
+  color += vec3f(fineNoise * (0.42 / 255.0));
   return vec4f(clamp(color, vec3f(0.0), vec3f(1.0)), 1.0);
 }
 
@@ -2218,21 +2203,19 @@ async function main() {
     else{cam.y+=up*v;cam.y=Math.max(waterH+.9,Math.min(3000,cam.y));}
   }
 
-  // Immutable looks: original sunset, blue aerial, owner's photographed dusk
-  // settings, and the preserved charcoal/indigo paint treatment.
+  // Three live scenes. Original versions remain in local preservation copies.
   const OCEAN_PRESETS={
-    sunset:{label:'Sunset',code:0,pose:{y:3.2,pitch:-4.5,floating:true},params:{windSpeed:7,swellHs:1.8,choppy:1.25,foam:1,sunElev:2.6,sunAzim:4,exposure:1.35,haze:3,clouds:.28,veil:.34,turbidity:1.6,bloom:.10}},
     aerial:{label:'Blue aerial',code:1,pose:{y:85,pitch:-79,floating:false},params:{windSpeed:6,swellHs:.8,choppy:1.15,foam:.30,sunElev:58,sunAzim:40,exposure:.60,haze:1.1,clouds:.08,veil:.10,turbidity:.85,bloom:.025}},
     dusk:{label:'Saved dusk',code:0,pose:{y:3.9,pitch:-4.5,floating:true},quality:'high',params:{windSpeed:6.3,swellHs:2.1,choppy:0,foam:0,sunElev:-.1,sunAzim:4,exposure:.5,haze:6,clouds:.31,veil:.28,turbidity:1.6,bloom:.10}},
-    ink:{label:'Ink sea',code:2,pose:{y:3.2,pitch:-13.5,floating:true},params:{windSpeed:7,swellHs:1.8,choppy:1.25,foam:1,sunElev:2.6,sunAzim:4,exposure:1.35,haze:3,clouds:.28,veil:.34,turbidity:1.6,bloom:.10}}
+    ink:{label:'Ink sea',code:2,pose:{y:3.2,pitch:-10,floating:true},params:{windSpeed:6.5,swellHs:1.2,choppy:1.15,foam:.5,sunElev:1.8,sunAzim:12,exposure:1.15,haze:2,clouds:.38,veil:.26,turbidity:1.6,bloom:.04}}
   };
-  let currentPreset='sunset';
+  let currentPreset='dusk',inkPalette=0;
   const savedLooks={};
-  const presetKeys=Object.keys(OCEAN_PRESETS.sunset.params);
-  const sceneStorageKey='ginter-ocean-scenes-v2';
+  const presetKeys=Object.keys(OCEAN_PRESETS.dusk.params);
+  const sceneStorageKey='ginter-ocean-scenes-v3';
   function saveSceneSettings(){
     savedLooks[currentPreset]={params:Object.fromEntries(presetKeys.map(k=>[k,P[k]])),quality};
-    try{localStorage.setItem(sceneStorageKey,JSON.stringify({active:currentPreset,looks:savedLooks}));}catch{}
+    try{localStorage.setItem(sceneStorageKey,JSON.stringify({active:currentPreset,looks:savedLooks,inkPalette,inkRevision:1}));}catch{}
   }
   function setPresetCamera(id){
     const pose=OCEAN_PRESETS[id].pose;
@@ -2243,7 +2226,7 @@ async function main() {
     dirty=true;
   }
   function applyOceanPreset(id,remember=true){
-    if(!OCEAN_PRESETS[id])id='sunset';
+    if(!OCEAN_PRESETS[id])id='dusk';
     if(remember)saveSceneSettings();
     currentPreset=id;
     const preset=OCEAN_PRESETS[id],saved=savedLooks[id];
@@ -2260,18 +2243,23 @@ async function main() {
     saveSceneSettings();
   }
   function initOceanPresets(){
-    let initial=qs.get('scene')||'sunset';
+    let initial=qs.get('scene')||'dusk';
     try{
-      const record=JSON.parse(localStorage.getItem(sceneStorageKey)||'null');
+      const currentRecord=localStorage.getItem(sceneStorageKey);
+      const record=JSON.parse(currentRecord||localStorage.getItem('ginter-ocean-scenes-v2')||'null');
       for(const[id,look]of Object.entries(record?.looks||{})){
-        if(!OCEAN_PRESETS[id]||!look?.params)continue;
+        if(!OCEAN_PRESETS[id]||!look?.params||(id==='ink'&&record.inkRevision!==1))continue;
         const params={};
         for(const k of presetKeys)if(Number.isFinite(look.params[k]))params[k]=look.params[k];
         savedLooks[id]={params,quality:look.quality==='high'?'high':'balanced'};
       }
       if(!qs.has('scene')&&OCEAN_PRESETS[record?.active])initial=record.active;
+      if(Number.isInteger(record?.inkPalette))inkPalette=Math.max(0,Math.min(2,record.inkPalette));
     }catch{}
     for(const button of document.querySelectorAll('[data-ocean-preset]'))button.addEventListener('click',()=>{applyOceanPreset(button.dataset.oceanPreset);resetFocus();});
+    const paletteSelect=document.getElementById('ink-palette');
+    paletteSelect.value=String(inkPalette);
+    paletteSelect.addEventListener('change',()=>{inkPalette=Number(paletteSelect.value);dirty=true;saveSceneSettings();});
     applyOceanPreset(initial,false);
   }
 
@@ -2566,7 +2554,7 @@ async function main() {
     }
 
     compData[0] = P.exposure; compData[1] = P.bloom; compData[2] = frameIndex % 64; compData[3] = currentPreset==='ink'?2:0.10;
-    compData[4] = 1.05; compData[5] = 1.06; compData[6] = currentPreset==='aerial'?0:-0.19; compData[7] = currentPreset==='aerial'?1:0;
+    compData[4] = 1.05; compData[5] = 1.06; compData[6] = currentPreset==='ink'?inkPalette:(currentPreset==='aerial'?0:-0.19); compData[7] = currentPreset==='aerial'?1:0;
     device.queue.writeBuffer(compUBO, 0, compData);
     const swapTex = ctx.getCurrentTexture();
     compPass.colorAttachments[0].view = swapTex.createView();
