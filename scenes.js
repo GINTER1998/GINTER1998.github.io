@@ -3,7 +3,7 @@ const hero=document.querySelector('#home');
 const scenes={ocean:document.querySelector('#ocean-scene'),sand:document.querySelector('#sand-scene')};
 const buttons=[...document.querySelectorAll('[data-landscape]')];
 const announcement=document.querySelector('#scene-announcement');
-let active='ocean',inView=true;
+let active='sand',inView=true;
 
 function syncVisibility(){
  for(const [id,frame] of Object.entries(scenes)){
@@ -14,7 +14,7 @@ function syncVisibility(){
  }
 }
 function chooseScene(id,updateURL=true){
- if(!scenes[id])id='ocean';
+ if(!scenes[id])id='sand';
  active=id;
  for(const [key,frame] of Object.entries(scenes)){
   frame.hidden=key!==id;
@@ -22,10 +22,10 @@ function chooseScene(id,updateURL=true){
  }
  hero.dataset.scene=id;
  for(const button of buttons)button.setAttribute('aria-pressed',String(button.dataset.landscape===id));
- if(announcement)announcement.textContent=id==='sand'?'Dune Garden. Move across the sand to rake.':'Ocean. Drag to look around.';
+ if(announcement)announcement.textContent=id==='sand'?'Dune Garden. Move across the sand to rake.':'Dusk. Drag to look around.';
  if(updateURL){
   const url=new URL(location.href);
-  if(id==='sand')url.searchParams.set('scene','sand');else url.searchParams.delete('scene');
+  if(id==='sand')url.searchParams.delete('scene');else url.searchParams.set('scene','dusk');
   history.replaceState(null,'',url);
  }
  syncVisibility();
@@ -51,6 +51,6 @@ if(hero&&scenes.ocean&&scenes.sand){
   syncVisibility();
  },{threshold:[0,.12]}).observe(hero);
  document.addEventListener('visibilitychange',syncVisibility);
- window.addEventListener('popstate',()=>chooseScene(new URLSearchParams(location.search).get('scene')==='sand'?'sand':'ocean',false));
- chooseScene(new URLSearchParams(location.search).get('scene')==='sand'?'sand':'ocean',false);
+ window.addEventListener('popstate',()=>chooseScene(['dusk','ocean'].includes(new URLSearchParams(location.search).get('scene'))?'ocean':'sand',false));
+ chooseScene(['dusk','ocean'].includes(new URLSearchParams(location.search).get('scene'))?'ocean':'sand',false);
 }

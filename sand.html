@@ -18,7 +18,6 @@
 <p id="sand-notice" role="status" aria-live="polite"></p>
 <div class="sand-tools" aria-label="Dune Garden controls">
 <button id="sand-view" type="button" aria-label="Switch to overhead view" aria-pressed="false">OVERHEAD ↗</button>
-<label for="rake-width">RAKE <select id="rake-width" aria-label="Rake width"><option value="1.25">FINE</option><option value="2.4" selected>MEDIUM</option><option value="4">WIDE</option></select></label>
 <button id="sand-clear" type="button">CLEAR SAND ↺</button>
 <button id="sand-wind" type="button" aria-pressed="false">WIND OFF</button>
 <button id="sand-touch" type="button" aria-pressed="false">RAKE OFF</button>
@@ -30,62 +29,109 @@
 // Every stroke changes a world-space sand height field. The same field is used
 // for ray intersection, surface displacement, shadows and lighting.
 const canvas=document.getElementById('sand-canvas'),fallbackCanvas=document.getElementById('sand-fallback');
-const viewButton=document.getElementById('sand-view'),windButton=document.getElementById('sand-wind'),touchButton=document.getElementById('sand-touch'),widthControl=document.getElementById('rake-width'),notice=document.getElementById('sand-notice'),instruction=document.getElementById('sand-instruction'),cursor=document.getElementById('rake-cursor');
+const viewButton=document.getElementById('sand-view'),windButton=document.getElementById('sand-wind'),touchButton=document.getElementById('sand-touch'),notice=document.getElementById('sand-notice'),instruction=document.getElementById('sand-instruction'),cursor=document.getElementById('rake-cursor');
 // Floating-point relief avoids the 8-bit stair steps of the first study.
 const SIZE=matchMedia('(pointer:coarse)').matches?2048:3072,MIN_X=-36,MIN_Z=-48,SPAN=72,NEUTRAL=0;
 const heights=new Float32Array(SIZE*SIZE);
-let gl=null,program=null,texture=null,uniforms={},postProgram=null,postUniforms={},sceneTexture=null,sceneFBO=null,isFallback=false,textureDirty=true,frame=0,strokes=0,marks=0,rakeWidth=2.4,wind=false,touchRaking=false,overhead=false,viewMix=0,parentVisible=true,visible=true,lastTime=0,lastWind=0,lastDraw=0,raf=0,previousHit=null,latestPointer=null,mouseInside=false,strokeActive=false,noticeTimer=0,needsFallbackDraw=true,contextLost=false,windTimer=0;
+const rakeWidth=4;
+let gl=null,program=null,texture=null,uniforms={},postProgram=null,postUniforms={},sceneTexture=null,sceneFBO=null,isFallback=false,textureDirty=true,frame=0,strokes=0,marks=0,wind=false,touchRaking=false,overhead=false,viewMix=0,parentVisible=true,visible=true,lastTime=0,lastWind=0,lastDraw=0,raf=0,previousHit=null,latestPointer=null,mouseInside=false,strokeActive=false,noticeTimer=0,needsFallbackDraw=true,contextLost=false,windTimer=0;
 const pointerQueue=[];let rakeAngle=null,previousTines=null,dirtyRect=null,grainAmount=.034;
+let sceneValid=false;
 const grainControl=document.getElementById('film-grain');
 const coarse=matchMedia('(pointer:coarse)').matches,reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
-const camera={position:[0,6.8,26],target:[0,.2,-30],right:[1,0,0],up:[0,1,0],forward:[0,0,-1],aspect:1,tan:.445};
+const camera={position:[0,6.8,26],target:[1.2,.2,-30],right:[1,0,0],up:[0,1,0],forward:[0,0,-1],aspect:1,tan:.455};
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function mix(a,b,t){return a+(b-a)*t}function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]}function sub(a,b){return[a[0]-b[0],a[1]-b[1],a[2]-b[2]]}function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}function normalized(a){let d=Math.hypot(...a)||1;return a.map(v=>v/d)}
 function dune(d,near,far,height){const s=d>0?near:far;return height*Math.exp(-d*d/(s*s))}
+// Five overlapping slopes follow the user-drawn guide: front right,
+// middle left, rear right, rear left, and the distant central rise.
+function slopeRamp(a,b,x){const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)}
+function slopeJoin(a,b){const t=Math.max(.5-Math.abs(a-b),0)/.5;return Math.max(a,b)+t*t*.125}
+// A Gaussian's maximum gradient is sqrt(2/e)*height/width. Include the
+// largest stretch of the curved crest, then solve widths from target slopes.
+// This bounds the rear dune's full 2D gradient, not just its side profile.
+const rearDune=(()=>{
+ const height=35,crestGradient=4*.035;
+ const stretch=(Math.sqrt(4+crestGradient*crestGradient)+crestGradient)/2;
+ const spread=degrees=>Math.sqrt(2/Math.E)*height*stretch/Math.tan(degrees*Math.PI/180);
+ return {height,width:spread(18),windward:spread(18),lee:spread(32),limit:32};
+})();
 function baseHeight(x,z){
- const c0=z+3.0+10.0*Math.sin(x*.075+.4)+x*.22+x*x*.003;
- const c1=z+35.0+8.0*Math.sin(x*.070+.95)+x*.10;
- const c2=z+72.0+8.0*Math.sin(x*.047+1.7)-x*.07;
- return -.7+.17*Math.sin(x*.077+z*.063)+dune(c0,14,3.4,4.8)+dune(c1,16,4.2,5.7)+dune(c2,20,5.8,6.8);
+ const c0=z+3+10*Math.sin(x*.075+.4)+x*.22+x*x*.003;
+ const c1=z+35+8*Math.sin(x*.070+.95)+x*.10;
+ const c2=z+66+5*Math.sin(x*.045+.2)-x*.28;
+ const c3=z+94+6*Math.sin(x*.040+.3)+x*.18;
+ const c4=z+124+4*Math.sin(x*.035+.6);
+ const h0=1.6+7.8*slopeRamp(-12,14,x);
+ const h1=11.8-8.8*slopeRamp(-18,22,x);
+ const h2=4+23*slopeRamp(-32,30,x);
+ const h3=32-22*slopeRamp(-45,28,x);
+ const h4=rearDune.height*Math.exp(-Math.pow((x+4)/rearDune.width,2));
+ let h=dune(c0,14,3.4,h0);h=slopeJoin(h,dune(c1,16,4.2,h1));h=slopeJoin(h,dune(c2,20,5.8,h2));h=slopeJoin(h,dune(c3,23,7,h3));h=slopeJoin(h,dune(c4,rearDune.lee,rearDune.windward,h4));
+ return -.7+.17*Math.sin(x*.077+z*.063)+h;
 }
 function markHeight(x,z){const u=(x-MIN_X)/SPAN*(SIZE-1),v=(z-MIN_Z)/SPAN*(SIZE-1);if(u<0||u>=SIZE-1||v<0||v>=SIZE-1)return 0;const i=Math.floor(u),j=Math.floor(v),fx=u-i,fy=v-j,a=j*SIZE+i;return mix(mix(heights[a],heights[a+1],fx),mix(heights[a+SIZE],heights[a+SIZE+1],fx),fy)}
 function heightAt(x,z){return baseHeight(x,z)+markHeight(x,z)}
-function updateCamera(){const t=viewMix*viewMix*(3-2*viewMix);camera.position=[mix(0,0,t),mix(6.8,36,t),mix(26,-3,t)];camera.target=[0,mix(.2,0,t),mix(-30,-10,t)];camera.forward=normalized(sub(camera.target,camera.position));camera.right=normalized(cross(camera.forward,[0,1,0]));camera.up=cross(camera.right,camera.forward);camera.aspect=canvas.clientWidth/Math.max(1,canvas.clientHeight);camera.tan=mix(.445,.55,t)}
+function updateCamera(){const t=viewMix*viewMix*(3-2*viewMix);camera.position=[mix(0,0,t),mix(6.8,36,t),mix(26,-3,t)];camera.target=[mix(1.2,0,t),mix(.2,0,t),mix(-30,-10,t)];camera.forward=normalized(sub(camera.target,camera.position));camera.right=normalized(cross(camera.forward,[0,1,0]));camera.up=cross(camera.right,camera.forward);camera.aspect=canvas.clientWidth/Math.max(1,canvas.clientHeight);camera.tan=mix(.455,.55,t)}
 function castRay(px,py){
  if(isFallback){return{x:MIN_X+px/innerWidth*SPAN,z:MIN_Z+py/innerHeight*SPAN}}
  const nx=(px/innerWidth*2-1)*camera.aspect*camera.tan,ny=(1-py/innerHeight*2)*camera.tan;
  const rd=normalized(camera.forward.map((v,i)=>v+camera.right[i]*nx+camera.up[i]*ny)),ro=camera.position;
  let t=.2,previous=.2;for(let n=0;n<190&&t<240;n++){let x=ro[0]+rd[0]*t,y=ro[1]+rd[1]*t,z=ro[2]+rd[2]*t,d=y-heightAt(x,z);if(d<0){let lo=previous,hi=t;for(let k=0;k<9;k++){let m=(lo+hi)*.5;if(ro[1]+rd[1]*m>heightAt(ro[0]+rd[0]*m,ro[2]+rd[2]*m))lo=m;else hi=m}t=(lo+hi)*.5;x=ro[0]+rd[0]*t;z=ro[2]+rd[2]*t;return x>MIN_X+1&&x<MIN_X+SPAN-1&&z>MIN_Z+1&&z<MIN_Z+SPAN-1?{x,z}:null}previous=t;t+=clamp(d*.50,.23,2.8)}return null;
 }
-function updateStats(){canvas.dataset.strokes=String(strokes);canvas.dataset.marks=String(marks);canvas.dataset.view=overhead?'overhead':'dunes';canvas.dataset.wind=wind?'on':'off';canvas.dataset.rakeWidth=String(rakeWidth);canvas.dataset.heightResolution=String(SIZE);canvas.dataset.heightPrecision='float32';canvas.dataset.grain=String(grainAmount)}
+function updateStats(){canvas.dataset.strokes=String(strokes);canvas.dataset.marks=String(marks);canvas.dataset.view=overhead?'overhead':'dunes';canvas.dataset.wind=wind?'on':'off';canvas.dataset.rakeWidth=String(rakeWidth);canvas.dataset.heightResolution=String(SIZE);canvas.dataset.heightPrecision='float32';canvas.dataset.grain=String(grainAmount);canvas.dataset.duneCount='5';canvas.dataset.rearSlopeLimit=String(rearDune.limit)}
 function say(message){notice.textContent=message;notice.classList.add('visible');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.classList.remove('visible'),2600)}
-// Sweep seven continuous capsules. The rake has an unoriented axis: reversing
-// direction does not flip tine identities or tear the inside of a turn.
+// Sweep a continuous seven-tooth profile. The newest pass redistributes the
+// sand across its whole footprint, including the ridges between the teeth.
 function dirty(x0,y0,x1,y1){
  if(!dirtyRect)dirtyRect=[x0,y0,x1,y1];
  else{dirtyRect[0]=Math.min(dirtyRect[0],x0);dirtyRect[1]=Math.min(dirtyRect[1],y0);dirtyRect[2]=Math.max(dirtyRect[2],x1);dirtyRect[3]=Math.max(dirtyRect[3],y1)}
  textureDirty=true;needsFallbackDraw=true;
 }
-function carveTine(a,b,spacing){
- const ppm=(SIZE-1)/SPAN,radius=spacing*.62;
- const x0=Math.max(1,Math.floor((Math.min(a.x,b.x)-radius-MIN_X)*ppm)),x1=Math.min(SIZE-2,Math.ceil((Math.max(a.x,b.x)+radius-MIN_X)*ppm));
- const y0=Math.max(1,Math.floor((Math.min(a.z,b.z)-radius-MIN_Z)*ppm)),y1=Math.min(SIZE-2,Math.ceil((Math.max(a.z,b.z)+radius-MIN_Z)*ppm));
- const vx=b.x-a.x,vz=b.z-a.z,len2=vx*vx+vz*vz,footprint=spacing*.235;
- for(let j=y0;j<=y1;j++)for(let i=x0;i<=x1;i++){
-  const x=MIN_X+i/ppm,z=MIN_Z+j/ppm,t=len2>1e-12?clamp(((x-a.x)*vx+(z-a.z)*vz)/len2,0,1):0;
-  const d=Math.hypot(x-a.x-vx*t,z-a.z-vz*t);if(d>radius)continue;
-  const valley=-.038*Math.exp(-d*d/(footprint*footprint));
-  const shoulder=.010*Math.exp(-Math.pow((d-spacing*.39)/(spacing*.16),2));
-  const target=valley+shoulder,idx=j*SIZE+i,old=heights[idx];
-  // A groove is the swept union of its segments, so frame boundaries cannot
-  // stamp beads into it. Raised shoulders never fill an existing furrow.
-  heights[idx]=target<0?Math.min(old,target):(old>=0?Math.max(old,target):old);
+// A sub-texel lookup removes exponentials from the per-pixel drawing loop.
+const rakeSamples=4096,rakeTable=new Float32Array((rakeSamples+1)*2);
+for(let i=0;i<=rakeSamples;i++){
+ const q=i/rakeSamples*3.62,d=Math.abs(q-Math.min(3,Math.round(q))),f=clamp((q-3.38)/.24,0,1);
+ rakeTable[i*2]=-.038*Math.exp(-Math.pow(d/.235,2))+.010*Math.exp(-Math.pow((d-.39)/.16,2));
+ rakeTable[i*2+1]=1-f*f*(3-2*f);
+}
+function sweepRake(from,to,spacing){
+ const half=spacing*3.62,ppm=(SIZE-1)/SPAN;
+ function edge(tines,side){const c=tines[3],dx=(tines[6].x-tines[0].x)/(6*spacing),dz=(tines[6].z-tines[0].z)/(6*spacing);return{x:c.x+dx*half*side,z:c.z+dz*half*side,q:half*side}}
+ const a=edge(from,-1),b=edge(from,1),c=edge(to,1),d=edge(to,-1),corners=[a,b,c,d].map(p=>({x:(p.x-MIN_X)*ppm,z:(p.z-MIN_Z)*ppm,q:p.q/spacing}));
+ // Shared cross-sections make adjacent strips continuous even through turns.
+ // Clip to each swept strip: round end-caps would repeatedly refill the
+ // freshly cut grooves immediately behind the moving rake.
+ const x0=Math.max(1,Math.floor(Math.min(...corners.map(p=>p.x)))),x1=Math.min(SIZE-2,Math.ceil(Math.max(...corners.map(p=>p.x))));
+ const y0=Math.max(1,Math.floor(Math.min(...corners.map(p=>p.z)))),y1=Math.min(SIZE-2,Math.ceil(Math.max(...corners.map(p=>p.z))));
+ if(x0>x1||y0>y1)return;
+ // Scan only covered spans instead of testing an almost-empty diagonal box.
+ for(const ids of [[0,1,2],[0,2,3]]){
+  const [p,q,r]=ids.map(i=>corners[i]),ux=q.x-p.x,uz=q.z-p.z,vx=r.x-p.x,vz=r.z-p.z,den=ux*vz-uz*vx;
+  if(Math.abs(den)<1e-8)continue;
+  const dx=((q.q-p.q)*vz-(r.q-p.q)*uz)/den,dz=(ux*(r.q-p.q)-vx*(q.q-p.q))/den;
+  const [lo,mid,hi]=[p,q,r].sort((a,b)=>a.z-b.z),longStep=(hi.x-lo.x)/(hi.z-lo.z),lookupScale=rakeSamples/3.62,table=rakeTable;
+  const upperStep=mid.z>lo.z?(mid.x-lo.x)/(mid.z-lo.z):0,lowerStep=hi.z>mid.z?(hi.x-mid.x)/(hi.z-mid.z):0;
+  const first=Math.max(y0,Math.ceil(Math.min(p.z,q.z,r.z)-1e-6)),last=Math.min(y1,Math.floor(Math.max(p.z,q.z,r.z)+1e-6));
+  for(let j=first;j<=last;j++){
+   const longX=lo.x+(j-lo.z)*longStep;
+   const shortX=j<mid.z||hi.z-mid.z<1e-9?lo.x+(j-lo.z)*upperStep:mid.x+(j-mid.z)*lowerStep;
+   const left=Math.min(longX,shortX),right=Math.max(longX,shortX);
+   const start=Math.max(x0,Math.ceil(left-1e-6)),end=Math.min(x1,Math.floor(right+1e-6));
+   let offset=p.q+dx*(start-p.x)+dz*(j-p.z),idx=j*SIZE+start;
+   for(let i=start;i<=end;i++,idx++,offset+=dx){
+    let s=(offset<0?-offset:offset)*lookupScale;if(s>rakeSamples)s=rakeSamples;
+    const k=s<rakeSamples?s|0:rakeSamples-1,f=s-k,n=k*2;
+    const target=table[n]+(table[n+2]-table[n])*f,coverage=table[n+1]+(table[n+3]-table[n+1])*f,old=heights[idx];
+    heights[idx]=old+(target-old)*coverage;
+   }
+  }
  }
  dirty(x0,y0,x1,y1);
 }
 function rakeStamp(x,z,angle){
  const nx=-Math.sin(angle),nz=Math.cos(angle),spacing=rakeWidth/7;
  const tines=Array.from({length:7},(_,i)=>({x:x+nx*(i-3)*spacing,z:z+nz*(i-3)*spacing}));
- if(previousTines)for(let i=0;i<7;i++)carveTine(previousTines[i],tines[i],spacing);
+ if(previousTines)sweepRake(previousTines,tines,spacing);
  previousTines=tines;marks++;
 }
 function processPointer(){
@@ -104,7 +150,8 @@ function processPointer(){
   const steps=Math.max(1,Math.ceil(distance/.035)),step=distance/steps;
   for(let i=1;i<=steps;i++){
    const delta=((direction-rakeAngle+Math.PI*1.5)%Math.PI+Math.PI)%Math.PI-Math.PI*.5;
-   rakeAngle+=clamp(delta,-step*2.4/rakeWidth,step*2.4/rakeWidth);
+   const turn=delta*(1-Math.exp(-step/(rakeWidth*.32)));
+   rakeAngle+=clamp(turn,-step*1.6/rakeWidth,step*1.6/rakeWidth);
    const t=i/steps;rakeStamp(mix(previousHit.x,hit.x,t),mix(previousHit.z,hit.z,t),rakeAngle);
   }
   previousHit=hit;
@@ -129,7 +176,6 @@ bindPointer(canvas);bindPointer(fallbackCanvas);document.querySelector('.sand-to
 let keyboardPointer=null;function keyboardRake(event){if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Escape'].includes(event.key))return;event.preventDefault();if(event.key==='Escape'){keyboardPointer=null;releasePointer();return}if(!keyboardPointer)keyboardPointer={x:innerWidth*.5,y:innerHeight*.73};const step=event.shiftKey?34:16;if(event.key==='ArrowLeft')keyboardPointer.x-=step;if(event.key==='ArrowRight')keyboardPointer.x+=step;if(event.key==='ArrowUp')keyboardPointer.y-=step;if(event.key==='ArrowDown')keyboardPointer.y+=step;keyboardPointer.x=clamp(keyboardPointer.x,24,innerWidth-24);keyboardPointer.y=clamp(keyboardPointer.y,innerHeight*.47,innerHeight-24);pointerMove({pointerType:'mouse',clientX:keyboardPointer.x,clientY:keyboardPointer.y})}for(const surface of [canvas,fallbackCanvas]){surface.addEventListener('keydown',keyboardRake);surface.addEventListener('blur',()=>{keyboardPointer=null;releasePointer()})}
 viewButton.addEventListener('click',()=>{overhead=!overhead;viewButton.textContent=overhead?'DUNES ↙':'OVERHEAD ↗';viewButton.setAttribute('aria-label',overhead?'Switch to dunes view':'Switch to overhead view');viewButton.setAttribute('aria-pressed',String(overhead));releasePointer();updateStats();start()});
 document.getElementById('sand-clear').addEventListener('click',()=>{heights.fill(NEUTRAL);strokes=0;marks=0;dirtyRect=null;textureDirty=true;needsFallbackDraw=true;releasePointer();updateStats();say('A clean beginning.');start()});
-widthControl.addEventListener('change',()=>{rakeWidth=Number(widthControl.value);releasePointer();updateStats()});
 windButton.addEventListener('click',()=>{wind=!wind;windButton.textContent=wind?'WIND ON':'WIND OFF';windButton.setAttribute('aria-pressed',String(wind));updateStats();say(wind?'The wind will slowly soften your marks.':'Your marks will stay in the sand.');start()});
 touchButton.addEventListener('click',()=>{touchRaking=!touchRaking;touchButton.textContent=touchRaking?'RAKE ON':'RAKE OFF';touchButton.setAttribute('aria-pressed',String(touchRaking));document.body.classList.toggle('touch-raking',touchRaking);instruction.textContent=touchRaking?'DRAG TO RAKE · TAP RAKE TO SCROLL':(coarse?'TAP RAKE ON TO DRAW IN THE SAND':'MOVE TO RAKE THE SAND');releasePointer()});
 if(coarse)instruction.textContent='TAP RAKE ON TO DRAW IN THE SAND';
@@ -146,13 +192,28 @@ out vec4 fragColor;
 uniform sampler2D uMarks;
 uniform vec2 uResolution;
 uniform vec3 uCamera,uForward,uRight,uUp;
+uniform vec4 uRearDune;
 uniform float uAspect,uTan,uTime;
 uniform int uQuality;
 const vec3 LIGHT=vec3(-.730,.380,-.568);
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+1.),f.x),f.y);}
 float dune(float d,float a,float b,float h){float s=d>0.?a:b;return h*exp(-d*d/(s*s));}
-float base(vec2 p){float x=p.x,z=p.y;float c0=z+3.+10.*sin(x*.075+.4)+x*.22+x*x*.003;float c1=z+35.+8.*sin(x*.070+.95)+x*.10;float c2=z+72.+8.*sin(x*.047+1.7)-x*.07;return -.7+.17*sin(x*.077+z*.063)+dune(c0,14.,3.4,4.8)+dune(c1,16.,4.2,5.7)+dune(c2,20.,5.8,6.8);}
+float slopeJoin(float a,float b){float t=max(.5-abs(a-b),0.)/.5;return max(a,b)+t*t*.125;}
+float base(vec2 p){float x=p.x,z=p.y;
+ float c0=z+3.+10.*sin(x*.075+.4)+x*.22+x*x*.003;
+ float c1=z+35.+8.*sin(x*.070+.95)+x*.10;
+ float c2=z+66.+5.*sin(x*.045+.2)-x*.28;
+ float c3=z+94.+6.*sin(x*.040+.3)+x*.18;
+ float c4=z+124.+4.*sin(x*.035+.6);
+ float h0=1.6+7.8*smoothstep(-12.,14.,x);
+ float h1=11.8-8.8*smoothstep(-18.,22.,x);
+ float h2=4.+23.*smoothstep(-32.,30.,x);
+ float h3=32.-22.*smoothstep(-45.,28.,x);
+ float h4=uRearDune.x*exp(-pow((x+4.)/uRearDune.y,2.));
+ float h=dune(c0,14.,3.4,h0);h=slopeJoin(h,dune(c1,16.,4.2,h1));h=slopeJoin(h,dune(c2,20.,5.8,h2));h=slopeJoin(h,dune(c3,23.,7.,h3));h=slopeJoin(h,dune(c4,uRearDune.z,uRearDune.w,h4));
+ return -.7+.17*sin(x*.077+z*.063)+h;
+}
 float mark(vec2 p){
  vec2 uv=(p-vec2(-36.,-48.))/72.;if(any(lessThan(uv,vec2(0.)))||any(greaterThan(uv,vec2(1.))))return 0.;
  // Explicit smooth bilinear interpolation works with R32F on all WebGL2
@@ -170,7 +231,7 @@ float shadow(vec3 p){float result=1.,t=.16;for(int i=0;i<20;i++){vec3 q=p+LIGHT*
 void main(){
  vec2 uv=(gl_FragCoord.xy/uResolution)*2.-1.;vec3 rd=normalize(uForward+uRight*uv.x*uAspect*uTan+uUp*uv.y*uTan),ro=uCamera;
  float t=.15,last=.15;bool hit=false;
- for(int i=0;i<230;i++){if(t>230.)break;vec3 q=ro+rd*t;if(q.y>9.&&rd.y>=0.)break;float d=q.y-terrain(q.xz);if(d<0.){hit=true;break;}last=t;t+=clamp(d*.50,.23,2.8);}
+ for(int i=0;i<230;i++){if(t>230.)break;vec3 q=ro+rd*t;if(q.y>48.&&rd.y>=0.)break;float d=q.y-terrain(q.xz);if(d<0.){hit=true;break;}last=t;t+=clamp(d*.50,.23,2.8);}
  if(!hit&&rd.y<-.005){float farT=(-1.1-ro.y)/rd.y;vec3 farP=ro+rd*farT;if(farT>t&&farT<650.&&farP.y<terrain(farP.xz)){last=t;t=farT;hit=true;}}
  vec3 color=sky(rd);
  if(hit){float lo=last,hi=t;for(int i=0;i<14;i++){float m=(lo+hi)*.5;vec3 q=ro+rd*m;if(q.y>terrain(q.xz))lo=m;else hi=m;}t=(lo+hi)*.5;vec3 p=ro+rd*t;float ep=.030;
@@ -182,6 +243,7 @@ void main(){
   vec3 coolShade=vec3(.016,.038,.054);
   float direct=pow(sun,.88)*mix(.025,1.,sh);
   color=sand*direct*1.42+coolShade*(.8+.4*max(n.y,0.));
+  color+=sand*.13*smoothstep(45.,85.,-p.z)*max(n.y,.35);
   float depression=mark(p.xz);float packed=1.-smoothstep(-.045,-.012,depression);color*=1.-packed*.045;
   float glint=pow(max(dot(n,normalize(LIGHT-rd)),0.),24.)*.016*sh;color+=vec3(.6,.70,.76)*glint;
   float fog=1.-exp(-max(t-25.,0.)*.006);color=mix(color,vec3(.045,.077,.093),fog*.7);
@@ -227,7 +289,7 @@ function makeProgram(fragment){const p=gl.createProgram();gl.attachShader(p,comp
 function initGL(){
  gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:false,stencil:false,powerPreference:'high-performance',preserveDrawingBuffer:false});if(!gl)throw Error('WebGL 2 unavailable');
  program=makeProgram(fragmentSource);postProgram=makeProgram(postSource);gl.bindVertexArray(gl.createVertexArray());
- for(const key of ['uMarks','uResolution','uCamera','uForward','uRight','uUp','uAspect','uTan','uTime'])uniforms[key]=gl.getUniformLocation(program,key);
+ for(const key of ['uMarks','uResolution','uCamera','uForward','uRight','uUp','uAspect','uTan','uTime','uRearDune'])uniforms[key]=gl.getUniformLocation(program,key);
  for(const key of ['uScene','uResolution','uGrain'])postUniforms[key]=gl.getUniformLocation(postProgram,key);
  texture=gl.createTexture();gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
  gl.texImage2D(gl.TEXTURE_2D,0,gl.R32F,SIZE,SIZE,0,gl.RED,gl.FLOAT,heights);
@@ -235,7 +297,7 @@ function initGL(){
  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
  sceneTexture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,sceneTexture);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
  sceneFBO=gl.createFramebuffer();
- gl.useProgram(program);gl.uniform1i(uniforms.uMarks,0);gl.useProgram(postProgram);gl.uniform1i(postUniforms.uScene,0);
+ gl.useProgram(program);gl.uniform1i(uniforms.uMarks,0);gl.uniform4f(uniforms.uRearDune,rearDune.height,rearDune.width,rearDune.lee,rearDune.windward);gl.useProgram(postProgram);gl.uniform1i(postUniforms.uScene,0);
  canvas.dataset.renderer='webgl2';canvas.dataset.antialias='FXAA';document.body.dataset.state='ready';
 }
 
@@ -250,7 +312,7 @@ function resize(){
   gl.bindFramebuffer(gl.FRAMEBUFFER,sceneFBO);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,sceneTexture,0);
   if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)throw Error('Scene target unavailable');gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,w,h);
  }
- canvas.dataset.renderSize=w+'x'+h;updateCamera();
+ canvas.dataset.renderSize=w+'x'+h;sceneValid=false;updateCamera();
 }
 function uploadRelief(){
  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);
@@ -264,7 +326,42 @@ function uploadRelief(){
 
 function erode(){for(let n=0;n<heights.length;n++)heights[n]*=.96;dirtyRect=null;textureDirty=true;needsFallbackDraw=true}
 
-function render(now){raf=0;if(!visible||contextLost)return;const dt=Math.min((now-lastTime)/1000,.05)||.016;lastTime=now;const target=overhead?1:0;if(Math.abs(viewMix-target)>.0002){viewMix=reduced?target:mix(viewMix,target,1-Math.exp(-dt*4.6));previousHit=null;previousTines=null;rakeAngle=null;pointerQueue.length=0}else viewMix=target;updateCamera();processPointer();if(wind&&marks&&now-lastWind>550){erode();lastWind=now}if(isFallback){if(needsFallbackDraw&&now-lastDraw>80){drawFallback();lastDraw=now}}else{if(textureDirty)uploadRelief();gl.bindFramebuffer(gl.FRAMEBUFFER,sceneFBO);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.useProgram(program);gl.uniform2f(uniforms.uResolution,canvas.width,canvas.height);gl.uniform3fv(uniforms.uCamera,camera.position);gl.uniform3fv(uniforms.uForward,camera.forward);gl.uniform3fv(uniforms.uRight,camera.right);gl.uniform3fv(uniforms.uUp,camera.up);gl.uniform1f(uniforms.uAspect,camera.aspect);gl.uniform1f(uniforms.uTan,camera.tan);gl.uniform1f(uniforms.uTime,now/1000);gl.drawArrays(gl.TRIANGLES,0,3);gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.bindTexture(gl.TEXTURE_2D,sceneTexture);gl.useProgram(postProgram);gl.uniform2f(postUniforms.uResolution,canvas.width,canvas.height);gl.uniform1f(postUniforms.uGrain,grainAmount);gl.drawArrays(gl.TRIANGLES,0,3)}frame++;canvas.dataset.frame=String(frame);if(latestPointer||viewMix!==target||(isFallback&&needsFallbackDraw)){raf=requestAnimationFrame(render)}else if(wind&&marks){windTimer=setTimeout(()=>{windTimer=0;start()},Math.max(30,560-(now-lastWind)))}}
+function reliefScreenRect(rect){
+ const x0=MIN_X+rect[0]/(SIZE-1)*SPAN,x1=MIN_X+rect[2]/(SIZE-1)*SPAN,z0=MIN_Z+rect[1]/(SIZE-1)*SPAN,z1=MIN_Z+rect[3]/(SIZE-1)*SPAN;
+ let low=Infinity,high=-Infinity;
+ for(let j=0;j<=4;j++)for(let i=0;i<=4;i++){const h=baseHeight(mix(x0,x1,i/4),mix(z0,z1,j/4));low=Math.min(low,h);high=Math.max(high,h)}
+ // Conservative bounds include unsampled terrain slopes and all rake relief.
+ const margin=7*Math.hypot((x1-x0)/8,(z1-z0)/8)+.12;low-=margin;high+=margin;
+ let left=Infinity,right=-Infinity,bottom=Infinity,top=-Infinity;
+ for(const x of [x0,x1])for(const z of [z0,z1])for(const y of [low,high]){
+  const p=sub([x,y,z],camera.position),depth=dot(p,camera.forward);if(depth<.2)return null;
+  const sx=(.5+.5*dot(p,camera.right)/(depth*camera.tan*camera.aspect))*canvas.width,sy=(.5+.5*dot(p,camera.up)/(depth*camera.tan))*canvas.height;
+  left=Math.min(left,sx);right=Math.max(right,sx);bottom=Math.min(bottom,sy);top=Math.max(top,sy);
+ }
+ const pad=12,x=Math.max(0,Math.floor(left)-pad),y=Math.max(0,Math.floor(bottom)-pad),r=Math.min(canvas.width,Math.ceil(right)+pad),t=Math.min(canvas.height,Math.ceil(top)+pad);
+ return r>x&&t>y?[x,y,r-x,t-y]:null;
+}
+function render(now){
+ raf=0;if(!visible||contextLost)return;
+ const dt=Math.min((now-lastTime)/1000,.05)||.016;lastTime=now;
+ const target=overhead?1:0,cameraMoving=viewMix!==target;
+ if(Math.abs(viewMix-target)>.0002){viewMix=reduced?target:mix(viewMix,target,1-Math.exp(-dt*4.6));previousHit=null;previousTines=null;rakeAngle=null;pointerQueue.length=0}else viewMix=target;
+ updateCamera();const inputStart=performance.now();processPointer();canvas.dataset.inputMs=(performance.now()-inputStart).toFixed(2);
+ if(wind&&marks&&now-lastWind>550){erode();lastWind=now}
+ if(isFallback){if(needsFallbackDraw&&now-lastDraw>80){drawFallback();lastDraw=now}}
+ else{
+  const patch=sceneValid&&!cameraMoving&&dirtyRect?reliefScreenRect(dirtyRect):null;
+  if(textureDirty)uploadRelief();gl.bindFramebuffer(gl.FRAMEBUFFER,sceneFBO);
+  if(patch){gl.enable(gl.SCISSOR_TEST);gl.scissor(...patch)}
+  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.useProgram(program);
+  gl.uniform2f(uniforms.uResolution,canvas.width,canvas.height);gl.uniform3fv(uniforms.uCamera,camera.position);gl.uniform3fv(uniforms.uForward,camera.forward);gl.uniform3fv(uniforms.uRight,camera.right);gl.uniform3fv(uniforms.uUp,camera.up);gl.uniform1f(uniforms.uAspect,camera.aspect);gl.uniform1f(uniforms.uTan,camera.tan);gl.uniform1f(uniforms.uTime,now/1000);gl.drawArrays(gl.TRIANGLES,0,3);
+  gl.disable(gl.SCISSOR_TEST);sceneValid=true;canvas.dataset.redraw=patch?'local':'full';canvas.dataset.scenePixels=String(patch?patch[2]*patch[3]:canvas.width*canvas.height);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.bindTexture(gl.TEXTURE_2D,sceneTexture);gl.useProgram(postProgram);gl.uniform2f(postUniforms.uResolution,canvas.width,canvas.height);gl.uniform1f(postUniforms.uGrain,grainAmount);gl.drawArrays(gl.TRIANGLES,0,3);
+ }
+ frame++;canvas.dataset.frame=String(frame);
+ if(latestPointer||viewMix!==target||(isFallback&&needsFallbackDraw)){raf=requestAnimationFrame(render)}
+ else if(wind&&marks){windTimer=setTimeout(()=>{windTimer=0;start()},Math.max(30,560-(now-lastWind)))}
+}
 function start(){if(windTimer){clearTimeout(windTimer);windTimer=0}if(visible&&!raf&&!contextLost){lastTime=performance.now();raf=requestAnimationFrame(render)}}
 function syncVisibility(){visible=parentVisible&&!document.hidden;canvas.dataset.active=String(visible);if(!visible){if(raf)cancelAnimationFrame(raf);raf=0;if(windTimer)clearTimeout(windTimer);windTimer=0;releasePointer()}else{resize();start()}parent.postMessage({type:'ginter-sand-state',visible,frame},location.origin)}
 window.addEventListener('resize',()=>{resize();releasePointer();start()});document.addEventListener('visibilitychange',syncVisibility);window.addEventListener('message',event=>{if(event.source!==parent||event.origin!==location.origin)return;if(event.data?.type==='ginter-sand-visibility'){parentVisible=Boolean(event.data.visible);syncVisibility()}});canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;canvas.dataset.renderer='context-lost';if(raf)cancelAnimationFrame(raf);raf=0;releasePointer();say('The scene is resting. Reload to restore the view.')});canvas.addEventListener('webglcontextrestored',()=>{contextLost=false;try{initGL();textureDirty=true;dirtyRect=null;canvas.dataset.renderSize='';resize();start()}catch(error){initFallback(error.message);start()}});

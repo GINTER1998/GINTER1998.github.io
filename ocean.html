@@ -37,28 +37,14 @@ SOFTWARE.
 .ocean-toolbar button{white-space:nowrap}
 @media(max-width:700px){.ocean-toolbar button{font-size:9px}}
 .ocean-toolbar button{background:#0c19269c}.ocean-toolbar button:hover{background:#34404fc9}.ocean-toolbar button[aria-pressed=true]{background:#283a4ad9}
-/* Saved ocean scenes, separate from camera and playback controls. */
-.ocean-presets{position:fixed;right:30px;bottom:84px;z-index:3;display:flex;gap:7px}
-.ocean-presets button{min-height:44px;background:#0c19269c;border:1px solid #eee4d24d;padding:11px 13px;font-size:9px;letter-spacing:.05em;white-space:nowrap;backdrop-filter:blur(12px)}
-.ocean-presets button:hover{background:#34404fc9}
-.ocean-presets button[aria-pressed=true]{background:#283a4ad9;border-color:#e4d3ae}
-body[data-state=error] .ocean-presets,body[data-state=lost] .ocean-presets{display:none}
-@media(max-width:700px){.ocean-presets{right:18px;top:198px;bottom:auto;display:grid;grid-template-columns:1fr 1fr;width:154px;gap:5px}.ocean-presets button{min-height:44px;padding:8px 5px;font-size:8px;letter-spacing:.015em}}
-
-.ink-palette-row{display:none}
-body[data-scene="ink"] .ink-palette-row{display:flex}
-/* Ink Sea is also the still/loading view for the homepage. */
-body{background:linear-gradient(#4d556b 0%,#3d465d 33%,#172439 34%,#0b1426 100%)}
-@media(max-width:700px){.ocean-presets button:last-child{grid-column:1/-1}}
 </style></head>
 <body data-state="loading">
 <canvas id="c" tabindex="0" aria-label="Interactive ocean. Drag the mouse to look around. W A S D move; E and Q change eye height. Press H for settings."></canvas>
 <a class="ocean-brand" href="index.html#work">GINTER STUDIO <span>OCEAN STUDIES</span></a>
-<div id="hud"><span id="fps">FORMING THE HORIZON</span><span class="help">DRAG TO LOOK · WASD TO MOVE</span></div>
+<div id="hud"><span id="scene-name">DUSK</span><span id="fps">FORMING THE HORIZON</span><span class="help">DRAG TO LOOK · WASD TO MOVE</span></div>
 <div id="loading" role="status"><span class="loader-mark">*</span><span>FORMING THE HORIZON</span></div>
-<div class="ocean-presets" role="group" aria-label="Ocean scenes"><button type="button" data-ocean-preset="aerial" aria-pressed="false" disabled>BLUE AERIAL</button><button type="button" data-ocean-preset="dusk" aria-pressed="false" disabled>SAVED DUSK</button><button type="button" data-ocean-preset="ink" aria-pressed="true" disabled>INK SEA</button></div>
 <div class="ocean-toolbar" role="group" aria-label="Ocean controls"><button id="pause" type="button" disabled aria-pressed="false">PAUSE Ⅱ</button><button id="reset" type="button" disabled aria-label="Reset view">RESET ↺</button><button id="settings" type="button" disabled aria-expanded="false" aria-controls="panel">SETTINGS +</button><button id="look" type="button" aria-pressed="false">LOOK ↔</button></div>
-<section id="panel" class="hidden" aria-label="Ocean settings"><div class="panel-heading"><h2>YOUR HORIZON</h2><button id="close-settings" type="button" aria-label="Close ocean settings">×</button></div><p class="panel-intro">Make yourself at home on the water.</p><label class="option ink-palette-row" for="ink-palette"><span>Ink palette</span><select id="ink-palette" aria-label="Ink palette"><option value="0">INDIGO</option><option value="1">PETROL</option><option value="2">GRAPHITE</option></select></label><div id="sliders"></div><label class="option"><span>Float with the waves</span><input id="float-mode" type="checkbox" checked></label><label class="option"><span>Image detail</span><select id="quality"><option value="balanced">Balanced</option><option value="high">High</option></select></label><p id="camera-status">Camera settling…</p><p id="render-status"></p><p class="panel-instructions">Drag to look · WASD to move<br>E / Q to raise or lower · Shift to move faster<br>Space to pause · H for settings · R to reset</p><p class="credit">Ocean engine adapted from <a href="https://github.com/Noniv/web-ocean" target="_blank" rel="noopener">Noniv / Maksymilian Dendura</a> · MIT</p></section>
+<section id="panel" class="hidden" aria-label="Ocean settings"><div class="panel-heading"><h2>YOUR HORIZON</h2><button id="close-settings" type="button" aria-label="Close ocean settings">×</button></div><p class="panel-intro">Make yourself at home on the water.</p><div id="sliders"></div><label class="option"><span>Float with the waves</span><input id="float-mode" type="checkbox" checked></label><label class="option"><span>Image detail</span><select id="quality"><option value="balanced">Balanced</option><option value="high">High</option></select></label><p id="camera-status">Camera settling…</p><p id="render-status"></p><p class="panel-instructions">Drag to look · WASD to move<br>E / Q to raise or lower · Shift to move faster<br>Space to pause · H for settings · R to reset</p><p class="credit">Ocean engine adapted from <a href="https://github.com/Noniv/web-ocean" target="_blank" rel="noopener">Noniv / Maksymilian Dendura</a> · MIT</p></section>
 <div id="touch-pad" role="group" aria-label="Move camera"><button data-move="KeyW" aria-label="Move forward">↑</button><button data-move="KeyA" aria-label="Move left">←</button><button data-move="KeyS" aria-label="Move backward">↓</button><button data-move="KeyD" aria-label="Move right">→</button></div>
 <div id="err" role="status"><h1>A still horizon.</h1><p>The live ocean needs a browser with WebGPU. You can continue exploring the portfolio, or open this scene in a WebGPU-enabled browser.</p><a class="fallback-link" href="index.html#work" target="_top">VIEW THE PORTFOLIO ↗</a><details><summary>Technical details</summary><pre id="error-detail"></pre></details><button type="button" onclick="location.reload()">TRY AGAIN ↻</button></div>
 <script type="module">// GINTER STUDIO adaptation of Noniv/web-ocean. Full MIT license is embedded above.
@@ -1574,143 +1560,7 @@ fn agxLook(v: vec3f, sat: f32, power: f32) -> vec3f {
 }
 fn ign(p: vec2f) -> f32 { return fract(52.9829189 * fract(dot(p, vec2f(0.06711056, 0.00583715)))); }
 
-// Cool INK SEA: Indigo / Teal / Graphite. Include in original COMPOSITE.
-// Requires existing VO, hdr, bloom, samp, U; no additional bindings.
-// U.q.z = palette 0 / 1 / 2. U.p.x = exposure.
-// HDR alpha: SKY=-1-cloudOpacity, WATER=absolute direct-specular luminance.
-// Broad brush filtering never filters the sunlight metadata.
-const ART_LUMA: vec3f = vec3f(0.2126, 0.7152, 0.0722);
-
-fn artLuminance(color: vec3f) -> f32 {
-  return max(dot(color, ART_LUMA), 0.0);
-}
-
-fn artPalette(indigo: vec3f, teal: vec3f, graphite: vec3f) -> vec3f {
-  var color = indigo;
-  if (U.q.z > 0.5) { color = teal; }
-  if (U.q.z > 1.5) { color = graphite; }
-  return color;
-}
-
-fn artHash(point: vec2f) -> f32 {
-  var q = fract(vec3f(point.x, point.y, point.x) * vec3f(0.1031, 0.1030, 0.0973));
-  q += dot(q, q.yzx + vec3f(33.33));
-  return fract((q.x + q.y) * q.z);
-}
-
-fn artFetch(position: vec2f, dimensions: vec2f) -> vec4f {
-  let coordinate = vec2i(clamp(position, vec2f(0.0), dimensions - vec2f(1.0)));
-  return textureLoad(hdr, coordinate, 0);
-}
-
-// Subtract the explicitly measured direct sun from the base paint response;
-// glints then retain their own real energy/shape rather than lifting a blob of
-// surrounding sea into a flat light-colored patch.
-fn artBaseLight(sampleValue: vec4f) -> f32 {
-  let directSun = max(sampleValue.a, 0.0);
-  return max(artLuminance(sampleValue.rgb) - directSun * 0.92, 0.0);
-}
-
-fn artPaintLight(position: vec2f, dimensions: vec2f, center: vec4f) -> f32 {
-  let left = artBaseLight(artFetch(position - vec2f(2.0, 0.0), dimensions));
-  let right = artBaseLight(artFetch(position + vec2f(2.0, 0.0), dimensions));
-  let above = artBaseLight(artFetch(position - vec2f(0.0, 2.0), dimensions));
-  let below = artBaseLight(artFetch(position + vec2f(0.0, 2.0), dimensions));
-  let gradient = vec2f(right - left, below - above);
-  var tangent = vec2f(0.88, 0.47);
-  if (dot(gradient, gradient) > 0.0000001) {
-    tangent = normalize(vec2f(-gradient.y, gradient.x));
-  }
-  let normal = vec2f(-tangent.y, tangent.x);
-  let radius = clamp(min(dimensions.x, dimensions.y) * 0.0055, 2.0, 5.0);
-  let centerIsSky = center.a < -0.5;
-  let base = artBaseLight(center);
-  let baseLog = log2(base + 0.006);
-  var total = base * 3.0;
-  var totalWeight = 3.0;
-  for (var tapIndex = 0u; tapIndex < 6u; tapIndex++) {
-    let side = select(-1.0, 1.0, (tapIndex & 1u) != 0u);
-    let pair = tapIndex >> 1u;
-    var offset: vec2f;
-    if (pair == 0u) { offset = tangent * (radius * side); }
-    else if (pair == 1u) { offset = tangent * (radius * 0.45 * side); }
-    else { offset = normal * (radius * 0.35 * side); }
-    let sampleValue = artFetch(position + offset, dimensions);
-    let light = artBaseLight(sampleValue);
-    let difference = abs(log2(light + 0.006) - baseLog);
-    let sameSurface = (sampleValue.a < -0.5) == centerIsSky;
-    let weight = select(0.0, exp(-difference * 0.95), sameSurface);
-    total += light * weight;
-    totalWeight += weight;
-  }
-  return mix(total / totalWeight, base, 0.30);
-}
-
-fn artSunEnergy(position: vec2f, dimensions: vec2f, center: vec4f) -> f32 {
-  // Only a one-pixel optical footprint. No six-pixel alpha averaging, expanded
-  // solar mask, synthetic reflection stripe, or thresholded orange road.
-  var energy = max(center.a, 0.0) * 0.84;
-  energy += max(artFetch(position + vec2f(1.0, 0.0), dimensions).a, 0.0) * 0.04;
-  energy += max(artFetch(position - vec2f(1.0, 0.0), dimensions).a, 0.0) * 0.04;
-  energy += max(artFetch(position + vec2f(0.0, 1.0), dimensions).a, 0.0) * 0.04;
-  energy += max(artFetch(position - vec2f(0.0, 1.0), dimensions).a, 0.0) * 0.04;
-  return energy;
-}
-
-fn inkComposite(in: VO) -> vec4f {
-  let dimensions = vec2f(textureDimensions(hdr));
-  let center = artFetch(in.pos.xy, dimensions);
-  let exposure = max(U.p.x, 0.05);
-  let physicalLight = artLuminance(center.rgb) * exposure;
-  let fineNoise = artHash(floor(in.pos.xy)) - 0.5;
-  var color: vec3f;
-  if (center.a < -0.5) {
-    let sky = artPalette(vec3f(0.305, 0.332, 0.414), vec3f(0.270, 0.347, 0.373), vec3f(0.310, 0.335, 0.378));
-    let cloud = artPalette(vec3f(0.190, 0.220, 0.302), vec3f(0.145, 0.235, 0.263), vec3f(0.205, 0.230, 0.272));
-    let cloudOpacity = clamp(-center.a - 1.0, 0.0, 1.0);
-    let lighting = physicalLight / (physicalLight + 0.50);
-    color = mix(sky, cloud, smoothstep(0.02, 0.90, cloudOpacity) * 0.82);
-    color += vec3f((lighting - 0.45) * 0.037);
-  } else {
-    let deep = artPalette(vec3f(0.043137, 0.078431, 0.149020), vec3f(0.027451, 0.121569, 0.160784), vec3f(0.082353, 0.098039, 0.121569));
-    let wave = artPalette(vec3f(0.105882, 0.188235, 0.301961), vec3f(0.101961, 0.262745, 0.298039), vec3f(0.223529, 0.262745, 0.309804));
-    let light = artPaintLight(in.pos.xy, dimensions, center) * exposure;
-    let response = pow(light / (light + 0.20), 0.80);
-    // Soft knees suggest layered paint while preserving continuous wave detail.
-    let paintResponse = response * 0.70 + smoothstep(0.22, 0.72, response) * 0.30;
-    color = mix(deep, wave, paintResponse);
-    let energy = artSunEnergy(in.pos.xy, dimensions, center) * exposure;
-    let sunResponse = pow(1.0 - exp(-energy * 0.55), 0.93);
-    let silver = artPalette(vec3f(0.595, 0.690, 0.750), vec3f(0.585, 0.725, 0.745), vec3f(0.675, 0.720, 0.750));
-    // Tiny pressure variation roughens only actual physical glint edges.
-    let pressure = clamp(sunResponse * (1.0 + fineNoise * 0.035), 0.0, 1.0);
-    color = mix(color, silver, pressure * 0.88);
-  }
-  // Keep the existing auto-layout bindings alive without a perceptible bloom
-  // halo or a broad low-frequency sunlight contribution.
-  let softLight = textureSampleLevel(bloom, samp, in.uv, 0.0).rgb * 0.125;
-  color += vec3f(min(artLuminance(softLight), 0.2) * max(U.p.y, 0.0) * 0.0001);
-  color += vec3f(fineNoise * (0.42 / 255.0));
-  return vec4f(clamp(color, vec3f(0.0), vec3f(1.0)), 1.0);
-}
-
-// Optional BLUE AERIAL-only photographic grade after original AgX/EOTF.
-// Use only if physical exposure/material adjustments still leave pale water.
-// Preserve actual source wave detail; no color bands or new reflection masks.
-fn aerialGrade(displayRGB: vec3f) -> vec3f {
-  let c = clamp(displayRGB, vec3f(0.0), vec3f(1.0));
-  let y = dot(c, vec3f(0.2126, 0.7152, 0.0722));
-  let chroma = max(c.r, max(c.g, c.b)) - min(c.r, min(c.g, c.b));
-  let neutral = 1.0 - smoothstep(0.12, 0.40, chroma);
-  // A navy/teal shadow curve, not a global tint. White sun/foam is protected.
-  let marine = pow(c, vec3f(1.12)) * vec3f(0.32, 0.82, 0.96);
-  let protectWhite = smoothstep(0.25, 0.62, y) * mix(0.55, 1.0, neutral);
-  let silver = mix(c, vec3f(pow(max(y,0.0),0.72)), neutral*0.65);
-  return mix(marine, silver, protectWhite);
-}
-
 @fragment fn fs(in: VO) -> @location(0) vec4f {
-  if(U.p.w>1.5){return inkComposite(in);}
   let dims = vec2f(textureDimensions(hdr));
   let pc = vec2i(in.pos.xy);
   var c = textureLoad(hdr, pc, 0).rgb;
@@ -1731,7 +1581,6 @@ fn aerialGrade(displayRGB: vec3f) -> vec3f {
   // triangular dither against banding in the sky gradients
   let n = ign(in.pos.xy + U.p.z * 5.588238) + ign(in.pos.xy * 1.37 + 17.0 + U.p.z * 3.1) - 1.0;
   o += n / 255.0;
-  if(U.q.w>0.5){o=aerialGrade(o);}
   return vec4f(clamp(o, vec3f(0.0), vec3f(1.0)), 1.0);
 }
 `;
@@ -2205,30 +2054,28 @@ async function main() {
     else{cam.y+=up*v;cam.y=Math.max(waterH+.9,Math.min(3000,cam.y));}
   }
 
-  // Three live scenes. Original versions remain in local preservation copies.
+  // Dusk is the only ocean scene.
   const OCEAN_PRESETS={
-    aerial:{label:'Blue aerial',code:1,pose:{y:85,pitch:-79,floating:false},params:{windSpeed:6,swellHs:.8,choppy:1.15,foam:.30,sunElev:58,sunAzim:40,exposure:.60,haze:1.1,clouds:.08,veil:.10,turbidity:.85,bloom:.025}},
-    dusk:{label:'Saved dusk',code:0,pose:{y:3.9,pitch:-4.5,floating:true},quality:'high',params:{windSpeed:6.3,swellHs:2.1,choppy:0,foam:0,sunElev:-.1,sunAzim:4,exposure:.5,haze:6,clouds:.31,veil:.28,turbidity:1.6,bloom:.10}},
-    ink:{label:'Ink sea',code:2,pose:{y:3.2,pitch:-10,floating:true},params:{windSpeed:6.5,swellHs:1.2,choppy:1.15,foam:.5,sunElev:1.8,sunAzim:12,exposure:1.15,haze:2,clouds:.38,veil:.26,turbidity:1.6,bloom:.04}}
+    dusk:{label:'Dusk',code:0,pose:{y:3.9,pitch:-4.5,floating:true},quality:'high',params:{windSpeed:6.3,swellHs:2.1,choppy:0,foam:0,sunElev:-.1,sunAzim:4,exposure:.5,haze:6,clouds:.31,veil:.28,turbidity:1.6,bloom:.10}}
   };
-  let currentPreset='ink',inkPalette=0;
+  let currentPreset='dusk';
   const savedLooks={};
   const presetKeys=Object.keys(OCEAN_PRESETS.dusk.params);
-  const sceneStorageKey='ginter-ocean-scenes-v3';
+  const sceneStorageKey='ginter-ocean-dusk-v1';
   function saveSceneSettings(){
     savedLooks[currentPreset]={params:Object.fromEntries(presetKeys.map(k=>[k,P[k]])),quality};
-    try{localStorage.setItem(sceneStorageKey,JSON.stringify({active:currentPreset,looks:savedLooks,inkPalette,inkRevision:1}));}catch{}
+    try{localStorage.setItem(sceneStorageKey,JSON.stringify({active:currentPreset,looks:savedLooks}));}catch{}
   }
   function setPresetCamera(id){
     const pose=OCEAN_PRESETS[id].pose;
     clearInput();
-    Object.assign(cam,{x:0,y:pose.y,z:0,yaw:0,pitch:pose.pitch*D2R,speed:id==='aerial'?18:6});
+    Object.assign(cam,{x:0,y:pose.y,z:0,yaw:0,pitch:pose.pitch*D2R,speed:6});
     eyeHeight=pose.y;verticalVelocity=0;floating=pose.floating;
     document.getElementById('float-mode').checked=floating;
     dirty=true;
   }
   function applyOceanPreset(id,remember=true){
-    if(!OCEAN_PRESETS[id])id='ink';
+    if(!OCEAN_PRESETS[id])id='dusk';
     if(remember)saveSceneSettings();
     currentPreset=id;
     const preset=OCEAN_PRESETS[id],saved=savedLooks[id];
@@ -2237,7 +2084,6 @@ async function main() {
     document.getElementById('quality').value=quality;
     setPresetCamera(id);
     for(const key of presetKeys){const input=document.getElementById('setting-'+key);if(input){input.value=String(P[key]);const output=input.parentElement.querySelector('output');if(output)output.textContent=input.value;}}
-    for(const button of document.querySelectorAll('[data-ocean-preset]'))button.setAttribute('aria-pressed',String(button.dataset.oceanPreset===id));
     document.body.dataset.scene=id;
     canvas.dataset.scene=id;
     const label=document.getElementById('scene-name');if(label)label.textContent=preset.label;
@@ -2245,23 +2091,17 @@ async function main() {
     saveSceneSettings();
   }
   function initOceanPresets(){
-    // The homepage always opens Ink Sea; per-scene settings remain saved.
-    let initial=qs.get('scene')||'ink';
+    const initial='dusk';
     try{
       const currentRecord=localStorage.getItem(sceneStorageKey);
-      const record=JSON.parse(currentRecord||localStorage.getItem('ginter-ocean-scenes-v2')||'null');
+      const record=JSON.parse(currentRecord||localStorage.getItem('ginter-ocean-scenes-v3')||'null');
       for(const[id,look]of Object.entries(record?.looks||{})){
-        if(!OCEAN_PRESETS[id]||!look?.params||(id==='ink'&&record.inkRevision!==1))continue;
+        if(!OCEAN_PRESETS[id]||!look?.params)continue;
         const params={};
         for(const k of presetKeys)if(Number.isFinite(look.params[k]))params[k]=look.params[k];
         savedLooks[id]={params,quality:look.quality==='high'?'high':'balanced'};
       }
-      if(Number.isInteger(record?.inkPalette))inkPalette=Math.max(0,Math.min(2,record.inkPalette));
     }catch{}
-    for(const button of document.querySelectorAll('[data-ocean-preset]'))button.addEventListener('click',()=>{applyOceanPreset(button.dataset.oceanPreset);resetFocus();});
-    const paletteSelect=document.getElementById('ink-palette');
-    paletteSelect.value=String(inkPalette);
-    paletteSelect.addEventListener('change',()=>{inkPalette=Number(paletteSelect.value);dirty=true;saveSceneSettings();});
     applyOceanPreset(initial,false);
   }
 
@@ -2370,7 +2210,6 @@ async function main() {
     f[72] = P.haze; f[73] = Math.max(cam.y, 10) * 0.001; f[74] = P.veil; f[75] = 0.9;
     // deep water body scatter colour (greenish coastal water), unresolved slope variance
     f[76] = 0.016 * P.turbidity; f[77] = 0.080 * P.turbidity; f[78] = 0.096 * P.turbidity; f[79] = 0.0024;
-    if(currentPreset==='aerial'){f[76]=0.0006*P.turbidity;f[77]=0.009*P.turbidity;f[78]=0.0155*P.turbidity;}
     f[80] = 0.035; f[81] = 0.120; f[82] = 0.085; f[83] = 2.6;
     f[84] = 0.36 + 0.12 * P.foam; f[85] = 2.5; f[86] = 1.0; f[87] = 1.0;
     f[88] = (5.802e-3 + 4.40e-3 * P.haze) * 1e-3;
@@ -2555,8 +2394,8 @@ async function main() {
       p.end();
     }
 
-    compData[0] = P.exposure; compData[1] = P.bloom; compData[2] = frameIndex % 64; compData[3] = currentPreset==='ink'?2:0.10;
-    compData[4] = 1.05; compData[5] = 1.06; compData[6] = currentPreset==='ink'?inkPalette:(currentPreset==='aerial'?0:-0.19); compData[7] = currentPreset==='aerial'?1:0;
+    compData[0] = P.exposure; compData[1] = P.bloom; compData[2] = frameIndex % 64; compData[3] = 0.10;
+    compData[4] = 1.05; compData[5] = 1.06; compData[6] = -0.19; compData[7] = 0;
     device.queue.writeBuffer(compUBO, 0, compData);
     const swapTex = ctx.getCurrentTexture();
     compPass.colorAttachments[0].view = swapTex.createView();
@@ -2586,7 +2425,7 @@ async function main() {
 
   document.body.dataset.state='ready';
   initOceanPresets();
-  for(const b of document.querySelectorAll('.ocean-toolbar button,.ocean-presets button'))b.disabled=false;
+  for(const b of document.querySelectorAll('.ocean-toolbar button'))b.disabled=false;
   if(embedded)parent.postMessage({type:'ginter-ocean-ready'},location.origin);
 
   resize();

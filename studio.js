@@ -1,5 +1,5 @@
 import {works} from './work-data.js';
-import './scenes.js?v=20261020-sand-2';
+import './scenes.js?v=20261021-dune-home-v1';
 const grid=document.querySelector('#work-grid');
 const filters=[...document.querySelectorAll('[data-filter]')];
 for(const work of works){
