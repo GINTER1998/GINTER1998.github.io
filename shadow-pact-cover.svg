@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" role="img" aria-labelledby="title desc">
+    <title id="title">Borrowed power</title><desc id="desc">An illustrative close-up of three fan-shaped cards and a shadow reaching toward them; a speculative proposal visual, not a game screenshot.</desc><defs>
+<radialGradient id="table"><stop stop-color="#30372d"/><stop offset="1" stop-color="#151916"/></radialGradient>
+<radialGradient id="warm"><stop stop-color="#eab578" stop-opacity=".3"/><stop offset=".58" stop-color="#b6cd78" stop-opacity=".1"/><stop offset="1" stop-color="#151916" stop-opacity="0"/></radialGradient>
+<linearGradient id="paper" x2=".7" y2="1"><stop stop-color="#eee9d6"/><stop offset="1" stop-color="#bdbda6"/></linearGradient>
+<linearGradient id="shadow" x2=".3" y2="1"><stop stop-color="#050807"/><stop offset="1" stop-color="#101811"/></linearGradient>
+<linearGradient id="back" x2="1" y2="1"><stop stop-color="#3d4a3b"/><stop offset="1" stop-color="#202c24"/></linearGradient>
+<filter id="drop" x="-60%" y="-60%" width="220%" height="240%"><feDropShadow dx="0" dy="19" stdDeviation="17" flood-color="#000" flood-opacity=".55"/></filter>
+<filter id="glow"><feGaussianBlur stdDeviation="26"/></filter>
+</defs>
+    <rect width="1280" height="800" fill="#151916"/><ellipse cx="620" cy="450" rx="720" ry="490" fill="url(#table)"/>
+    <path d="M-80 660 C185 590 252 690 494 638 S910 579 1380 691" fill="none" stroke="#afc39c" stroke-width="1" opacity=".09"/><path d="M180 589 Q520 660 1057 585" fill="none" stroke="#afc39c" opacity=".13"/><g transform="translate(367,455) rotate(-18) scale(1.34)" filter="url(#drop)"><rect x="-126" y="-183" width="252" height="366" rx="13" fill="url(#paper)" stroke="#d9d8c8" stroke-width="2"/>
+      <path d="M-109-164 H109 V164 H-109 Z" fill="none" stroke="#69745a" stroke-width="1.6" opacity=".65"/>
+      <path d="M-100-91 Q-52-101 0-97 T100-91 L100 93 Q50 106 0 98 T-100 93 Z" fill="#69745a" opacity=".08"/>
+      <circle cx="-83" cy="-137" r="22" fill="#283027"/>
+      <text x="-83" y="-128" text-anchor="middle" fill="#eee9d6" font-family="Arial,sans-serif" font-size="27">1</text>
+      <path d="M63-145 L76-158 L89-145 L76-132 Z" fill="none" stroke="#69745a" stroke-width="2"/>
+      <g transform="translate(0,-6)"><g fill="none" stroke="#69745a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M-41 48 L25-39 L46-54 L43-27 L-23 59 M-39 34 L-8 62 M-25 49 L-46 76 M-53 69 L-39 82"/></g></g>
+      <text x="0" y="136" text-anchor="middle" fill="#283027" font-family="Arial,sans-serif" font-size="25" font-weight="600" letter-spacing="4">STRIKE</text>
+      <text x="87" y="91" text-anchor="middle" fill="#283027" font-family="Georgia,serif" font-size="39">6</text></g><g transform="translate(654,426) rotate(0) scale(1.34)" filter="url(#drop)"><rect x="-126" y="-183" width="252" height="366" rx="13" fill="url(#paper)" stroke="#d9d8c8" stroke-width="2"/>
+      <path d="M-109-164 H109 V164 H-109 Z" fill="none" stroke="#69745a" stroke-width="1.6" opacity=".65"/>
+      <path d="M-100-91 Q-52-101 0-97 T100-91 L100 93 Q50 106 0 98 T-100 93 Z" fill="#69745a" opacity=".08"/>
+      <circle cx="-83" cy="-137" r="22" fill="#283027"/>
+      <text x="-83" y="-128" text-anchor="middle" fill="#eee9d6" font-family="Arial,sans-serif" font-size="27">1</text>
+      <path d="M63-145 L76-158 L89-145 L76-132 Z" fill="none" stroke="#69745a" stroke-width="2"/>
+      <g transform="translate(0,-6)"><g fill="none" stroke="#69745a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M0-68 C22-56 40-49 55-47 L49 7 Q39 46 0 72 Q-39 46-49 7 L-55-47 Q-24-53 0-68 Z M0-48 L0 48 M-32-25 L31-25"/></g></g>
+      <text x="0" y="136" text-anchor="middle" fill="#283027" font-family="Arial,sans-serif" font-size="25" font-weight="600" letter-spacing="4">GUARD</text>
+      <text x="87" y="91" text-anchor="middle" fill="#283027" font-family="Georgia,serif" font-size="39">5</text></g><g transform="translate(938,467) rotate(18) scale(1.34)" filter="url(#drop)"><rect x="-126" y="-183" width="252" height="366" rx="13" fill="url(#paper)" stroke="#d9d8c8" stroke-width="2"/>
+      <path d="M-109-164 H109 V164 H-109 Z" fill="none" stroke="#69745a" stroke-width="1.6" opacity=".65"/>
+      <path d="M-100-91 Q-52-101 0-97 T100-91 L100 93 Q50 106 0 98 T-100 93 Z" fill="#69745a" opacity=".08"/>
+      <circle cx="-83" cy="-137" r="22" fill="#283027"/>
+      <text x="-83" y="-128" text-anchor="middle" fill="#eee9d6" font-family="Arial,sans-serif" font-size="27">1</text>
+      <path d="M63-145 L76-158 L89-145 L76-132 Z" fill="none" stroke="#69745a" stroke-width="2"/>
+      <g transform="translate(0,-6)"><g fill="none" stroke="#69745a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M-48-38 L-16-51 L27 53 L-5 66 Z M-12-62 L24-62 L24 57 M35-50 L65-38 L27 59 M-2-9 L12-9 M5-16 L5-2"/></g></g>
+      <text x="0" y="136" text-anchor="middle" fill="#283027" font-family="Arial,sans-serif" font-size="25" font-weight="600" letter-spacing="4">DRAW</text>
+      <text x="87" y="91" text-anchor="middle" fill="#283027" font-family="Georgia,serif" font-size="39">2</text></g><g transform="translate(-60,-100) scale(1.07)" opacity="1">
+    <path d="M1263-70 C1180 11 1123 64 1102 137 C1092 176 1051 201 1009 232 L931 295 C912 313 922 335 942 325 L1000 291 C971 329 927 383 895 440 C874 477 889 501 909 476 L1009 348 C992 393 966 451 956 489 C947 523 967 535 981 501 L1045 367 C1033 411 1023 452 1020 477 C1017 508 1040 508 1046 481 L1080 366 C1079 391 1082 417 1087 434 C1098 466 1117 451 1109 424 C1102 389 1117 350 1140 318 C1168 281 1164 251 1169 225 C1178 179 1237 153 1320 125 Z" fill="url(#shadow)" stroke="#56634b" stroke-opacity=".5" stroke-width="2" filter="url(#drop)"/>
+    <path d="M1088 186 Q1082 239 1021 289 M1090 258 Q1081 302 1050 337 M1146 250 Q1140 287 1115 311" fill="none" stroke="#6f7e60" stroke-opacity=".22" stroke-width="2"/>
+    </g>
+    </svg>

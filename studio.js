@@ -1,4 +1,4 @@
-import {works} from './work-data.js?v=20261028-shadow-pact-proposal-v2';
+import {works} from './work-data.js?v=20261029-shadow-pact-concepts-v3';
 import './scenes.js?v=20261021-dune-home-v1';
 const grid=document.querySelector('#work-grid');
 const filters=[...document.querySelectorAll('[data-filter]')];
