@@ -1,0 +1,488 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#151916"><title>Shadow Pact — Play</title><style>*{box-sizing:border-box}html{color-scheme:dark}body{margin:0;min-width:280px;background:#151916;color:#dedfcb;font-family:Arial,sans-serif;font-size:14px;line-height:1.5;--warm:#aebe9a;--table:#151916;--paper:#d9d8c8;--attack:#6e795e;--guard:#69796c;--poison:#73805b}button,a{touch-action:manipulation}button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed}button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid #ead59c;outline-offset:5px}a{color:inherit;text-underline-offset:5px}body.assisted{--table:#223125;--paper:#eee3b9;--attack:#cd914e;--guard:#6baa96;--poison:#9db950;--warm:#eab578}.shell{max-width:1380px;margin:auto;padding:20px 30px 28px;background:radial-gradient(ellipse at 55% 45%,#77885918,transparent 65%),var(--table);min-height:740px;transition:background 1.2s}.bar,.status,.turn,.hand-head{display:flex;align-items:center;justify-content:space-between;gap:18px}.bar{border-bottom:1px solid #74806245;padding-bottom:14px}.brand{font:24px Georgia,serif;letter-spacing:4px}.label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#a6af9a}.tools{display:flex;gap:6px;flex-wrap:wrap}.tools button,.quiet{border:1px solid #71806060;background:transparent;color:#cbd0bd;padding:8px 13px;border-radius:2px;min-height:40px}.tools button:hover,.quiet:hover{background:#71806030}.tools button[aria-pressed=true]{border-color:#eab578;color:#eab578}.status{padding:17px 0 4px;flex-wrap:wrap}.vitals{display:flex;gap:22px;align-items:center}.vitals strong{font-weight:400;font-size:21px}.life{color:#d4b6a5}.energy{color:#ddd6a2}.guard{color:#a6c4b7}.stage{min-height:265px;position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;border-bottom:1px solid #78836340;overflow:hidden;isolation:isolate}.enemy{z-index:1;padding:26px 0 28px 12px;max-width:440px}.enemy h1{font:clamp(26px,3.4vw,44px) Georgia,serif;letter-spacing:-1px;margin:5px 0 4px;font-weight:400}.enemy p{margin:0 0 15px;color:#a5ae99;font:italic 15px Georgia,serif}.enemy-info{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.hp-track{height:3px;width:150px;background:#78836330;margin-top:11px}.hp-track i{height:100%;display:block;background:#b99f8b;transition:width .3s}.portrait{position:absolute;width:190px;left:39%;top:36px;opacity:.66;z-index:-1}.shadow-hand{position:absolute;width:57%;height:300px;right:-15%;top:-58px;z-index:-1;opacity:.7;transition:transform .8s,opacity .8s;pointer-events:none;transform:translate(50px,-25px)}body.assisted .shadow-hand{transform:translate(0,10px);opacity:1}body.claimed .shadow-hand{transform:translate(-100px,45px);opacity:1}.companion{justify-self:end;z-index:1;padding:20px 5px 15px 40px;max-width:330px}.whisper{font:italic 21px/1.5 Georgia,serif;color:#c9ceba;min-height:65px}.borrow{background:#aebe9a;color:#172016;border:1px solid #cbd3b6;padding:11px 20px;min-height:47px;display:flex;gap:22px;justify-content:space-between;width:100%;letter-spacing:1px}.borrow:disabled{background:#52604755;color:#b1bca1;border-color:#aebe9a40}.price{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#b1bba3;margin-top:10px;gap:8px}.pips{display:inline-flex;gap:6px}.pips i{width:7px;height:7px;transform:rotate(45deg);border:1px solid #8b9a7d}.pips i.on{background:#eab578;border-color:#eab578}.recovery{font-size:11px;color:#a5af96;margin:9px 0 0}.primary{background:#d9d8c8;border:1px solid #eeeddc;color:#20271e;padding:13px 25px;letter-spacing:1.5px;min-height:48px}.primary:hover,.borrow:hover:not(:disabled){filter:brightness(1.1)}.hand-head{margin:20px 0 8px}.hint{font-size:12px;color:#9eaa90}.hand{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;padding:12px 5px 14px;margin:0 -5px;scrollbar-width:thin;scrollbar-color:#8b9a7d #151916}.card{--angle:0deg;position:relative;width:149px;flex:0 0 149px;height:222px;border:1px solid #dbdebf;border-radius:8px;padding:0;color:#293125;background:var(--paper);box-shadow:0 12px 22px #0005;text-align:center;transition:transform .2s,filter .3s,background .8s;transform:rotate(var(--angle));overflow:hidden}.card:before{content:'';position:absolute;inset:9px;border:1px solid #78836366;border-radius:2px;pointer-events:none}.card:hover:not(:disabled),.card:focus-visible:not(:disabled){transform:translateY(-7px);z-index:2;box-shadow:0 15px 25px #0007}.card:disabled{filter:brightness(.67);opacity:.75}.card-name{display:block;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin:0 5px;font-weight:600}.cost{position:absolute;top:15px;left:15px;width:24px;height:24px;background:#2a3427;color:#eeeddc;line-height:24px;border-radius:50%;font-size:14px}.card-art{display:block;width:100%;height:115px;margin-top:39px;padding:12px 28px;color:var(--attack)}.card[data-kind=guard] .card-art{color:var(--guard)}.card[data-kind=poison] .card-art{color:var(--poison)}.card-art svg{height:100%;width:100%;overflow:visible}.value{display:block;font:21px Georgia,serif;margin:5px 0}.card small{position:absolute;right:12px;top:16px;color:#57614e;font-size:10px}.turn{border-top:1px solid #78836340;padding-top:14px;flex-wrap:wrap}.detail{max-width:670px;font-size:12px;color:#bac3aa;min-height:36px;margin:0}.detail strong{color:#e1e4ce}.bottom{margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.relics{display:flex;gap:6px;flex-wrap:wrap}.relic{background:transparent;border:1px solid #78836370;color:#bdc8a7;font-size:12px;min-height:36px;padding:6px 10px}.notice{min-height:24px;margin:8px 0 0;color:#d9c895;font-size:12px}.welcome,.ending{grid-column:1/-1;padding:35px 12px;z-index:1}.welcome h1,.ending h1{font:clamp(35px,5vw,62px)/1.1 Georgia,serif;font-weight:400;letter-spacing:-2px;margin:10px 0 18px}.welcome p,.ending p{color:#bac3aa;max-width:430px}.welcome .primary{margin-top:10px}.welcome-art{position:absolute;width:310px;height:220px;right:18%;top:25px;opacity:.7;z-index:-1}.welcome-art svg{width:100%;height:100%;transform:rotate(12deg)}.reward{grid-column:1/-1;padding:24px 8px}.reward h1{font:30px Georgia,serif;margin:0 0 7px}.reward p{color:#acb79b;margin:0 0 8px}.reward-options{display:flex;gap:15px;padding:10px 2px 16px;overflow-x:auto}.reward-options .relic-choice{width:180px;flex:0 0 180px;min-height:170px;text-align:left;padding:18px;background:#243020;border:1px solid #7c9062;color:#d5dfc5}.relic-choice span{font:32px Georgia,serif;display:block;margin-bottom:12px}.relic-choice strong{font:17px Georgia,serif;display:block}.relic-choice p{font-size:12px;line-height:1.6;margin-top:10px}.ending blockquote{font:clamp(24px,4vw,44px)/1.3 Georgia,serif;margin:22px 0;color:#e6dfbe}.ending-actions{display:flex;gap:12px;flex-wrap:wrap}.overlay{position:fixed;inset:0;background:#080d09e8;z-index:50;padding:25px;display:grid;place-items:center}.overlay[hidden]{display:none}.sheet{max-width:600px;width:100%;max-height:90vh;overflow:auto;background:#1b241a;border:1px solid #7c9062;padding:26px}.sheet h2{font:28px Georgia,serif;font-weight:400;margin:5px 0 18px}.sheet p,.sheet li{color:#bec8af;font-size:14px;line-height:1.8}.sheet .quiet{float:right}.sheet ul{padding-left:20px}.keys{font-size:10px;color:#97a38a;letter-spacing:1px}.reduced *{transition:none!important;animation:none!important}@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}@media(max-width:700px){.shell{padding:16px 18px 22px;min-height:880px}.bar{gap:10px;flex-wrap:wrap}.brand{font-size:18px;letter-spacing:2px}.tools button{padding:7px 9px;font-size:11px;min-height:38px}.stage{grid-template-columns:1fr;min-height:360px}.enemy{padding:15px 4px 10px}.companion{justify-self:stretch;padding:10px 4px 20px;max-width:none}.whisper{font-size:17px;min-height:28px;margin:8px 0}.shadow-hand{width:100%;right:-30%;top:0}.portrait{left:auto;right:10px;width:120px;top:18px}.status{font-size:12px;gap:9px}.vitals{gap:18px}.vitals strong{font-size:18px}.card{width:135px;flex-basis:135px;height:211px}.card-art{height:109px;padding:10px 25px}.card-name{font-size:11px}.welcome-art{right:0;width:220px;opacity:.25}.welcome h1{font-size:42px}.hand-head{align-items:start}.hand-head .hint{max-width:180px;text-align:right}.turn .primary{width:100%}.keys{display:none}}@media(max-width:380px){.shell{padding-inline:12px}.tools{gap:3px}.brand{font-size:16px}.tools button{padding:6px}.hand-head{gap:9px}.vitals{gap:13px}}
+</style></head><body><main class="shell" id="game" aria-label="Shadow Pact card table">
+<header class="bar"><span class="brand">SHADOW PACT</span><nav class="tools" aria-label="Game controls"><button id="help" data-action="help" aria-expanded="false" aria-controls="overlay">How to play</button><button id="sound" data-action="sound" aria-pressed="false">Sound off</button><button id="motion" data-action="motion" aria-pressed="false">Motion on</button><button data-action="new" aria-label="Start a new deal">↻</button></nav></header>
+<div class="status"><span class="label" id="progress"></span><div class="vitals"><span class="life" aria-label="Your health">♡ <strong id="hp"></strong></span><span class="energy" aria-label="Available energy">⚡ <strong id="energy"></strong></span><span class="guard" aria-label="Your guard">◇ <strong id="guard"></strong></span></div></div>
+<section class="stage" id="stage" aria-label="Encounter"></section>
+<div class="hand-head" id="hand-head"><span class="label">Your hand</span><span class="hint">Hover or focus for details. Tap a card to play.</span></div>
+<div class="hand" id="hand" aria-label="Your cards; scroll sideways if needed"></div>
+<div class="turn" id="turn"><div><span class="label" id="turn-label"></span><p class="detail" id="detail">Hover or focus a card for its effect. Tap to play.</p></div><button class="primary" id="end" data-action="end">END TURN →</button></div>
+<p class="notice" id="notice" role="status" aria-live="polite">A quiet table. A familiar presence.</p>
+<footer class="bottom"><div class="relics" id="relics" aria-label="Your relics"></div><span class="hint" id="pile"></span><span class="keys">1–9 PLAY · E END · S BORROW</span><span class="hint" id="seed"></span></footer>
+<noscript><p>This game needs JavaScript. Please enable it to take a seat.</p></noscript></main>
+<div class="overlay" id="overlay" hidden><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><button class="quiet" id="close" data-action="close">Close ×</button><h2 id="sheet-title"></h2><div id="sheet-body"></div></section></div><script type="module">// Browser-native, deterministic rules for SECOND SELF. No rendering or platform APIs.
+const CARD_DEFS = [
+  { id: 'strike', name: '直击', cost: 1, type: 'attack', rarity: 'starter', tags: ['hit'], description: '造成 6 点伤害。' },
+  { id: 'guard', name: '站稳', cost: 1, type: 'skill', rarity: 'starter', tags: ['block'], description: '获得 6 点护盾。护盾在下一回合开始时清空。' },
+  { id: 'flurry', name: '碎响', cost: 1, type: 'attack', rarity: 'common', tags: ['hit', 'combo'], description: '造成 2 点伤害，重复 3 次。' },
+  { id: 'venom', name: '余毒', cost: 1, type: 'attack', rarity: 'common', tags: ['poison', 'hit'], description: '造成 2 点伤害，施加 4 层毒。敌人行动前毒造成等量伤害，然后减少 1 层。' },
+  { id: 'needle', name: '飞针', cost: 0, type: 'attack', rarity: 'common', tags: ['hit', 'draw', 'exhaust'], description: '造成 3 点伤害，抽 1 张牌。本场战斗移除。' },
+  { id: 'quickstep', name: '侧步', cost: 0, type: 'skill', rarity: 'common', tags: ['block', 'draw', 'exhaust'], description: '获得 4 点护盾，抽 1 张牌。本场战斗移除。' },
+  { id: 'echo', name: '追问', cost: 1, type: 'attack', rarity: 'common', tags: ['hit', 'draw'], description: '造成 4 点伤害，抽 2 张牌。' },
+  { id: 'bloom', name: '暗生', cost: 2, type: 'skill', rarity: 'uncommon', tags: ['poison'], description: '施加 9 层毒。毒无视护盾，在敌人行动前结算。' },
+  { id: 'catalyst', name: '蔓延', cost: 1, type: 'skill', rarity: 'uncommon', tags: ['poison'], description: '敌人已有毒时，毒层数翻倍；否则施加 3 层毒。' },
+  { id: 'shieldbash', name: '借力', cost: 1, type: 'attack', rarity: 'uncommon', tags: ['block', 'hit'], description: '先获得 3 点护盾，再造成等同当前护盾的伤害。' },
+  { id: 'bulwark', name: '界限', cost: 2, type: 'skill', rarity: 'common', tags: ['block'], description: '获得 15 点护盾。' },
+  { id: 'riposte', name: '回敬', cost: 1, type: 'skill', rarity: 'uncommon', tags: ['block', 'counter'], description: '获得 6 点护盾；本回合每次挡住攻击，反击 3 点伤害。' },
+  { id: 'shred', name: '破局', cost: 2, type: 'attack', rarity: 'uncommon', tags: ['hit', 'combo'], description: '造成 5 点伤害，重复 3 次。' },
+  { id: 'renew', name: '喘息', cost: 1, type: 'skill', rarity: 'common', tags: ['heal', 'exhaust'], description: '恢复 5 点生命。本场战斗移除。' },
+  { id: 'focus', name: '专注', cost: 0, type: 'skill', rarity: 'uncommon', tags: ['energy', 'draw', 'exhaust'], description: '获得 1 点能量，抽 1 张牌。本场战斗移除。' },
+];
+
+const RELIC_DEFS = [
+  { id: 'razor', name: '锯齿', symbol: '✦', tags: ['hit'], description: '每次攻击命中额外造成 1 点伤害。多段攻击每段都生效。' },
+  { id: 'spore', name: '黑色孢子', symbol: '❋', tags: ['poison'], description: '每次施加毒，额外增加 2 层。蔓延翻倍时不额外触发。' },
+  { id: 'buckle', name: '旧铜扣', symbol: '◇', tags: ['block'], description: '每场战斗开始时获得 8 点护盾。' },
+  { id: 'mirror', name: '裂纹镜', symbol: '◈', tags: ['combo'], description: '每回合第 3、6、9…次攻击命中时，获得 1 点能量。' },
+  { id: 'anchor', name: '沉锚', symbol: '⚓', tags: ['block'], description: '每次通过卡牌获得护盾，额外获得 2 点。' },
+  { id: 'thorns', name: '荆棘环', symbol: '✳', tags: ['counter'], description: '每次用护盾挡住攻击，反击 3 点伤害。' },
+  { id: 'pocket', name: '深口袋', symbol: '▧', tags: ['draw'], description: '每回合开始时额外抽 1 张牌。' },
+  { id: 'lantern', name: '静火', symbol: '◉', tags: ['heal'], description: '未向影子求助的回合结束时，恢复 2 点生命。' },
+];
+
+const ENEMY_DEFS = [
+  { id: 'murmur', name: '低语', subtitle: '它总有一个理由', hp: 27, kind: 'normal', pattern: [{ type: 'attack', damage: 6, hits: 1 }, { type: 'guard', block: 5 }, { type: 'attack', damage: 8, hits: 1 }] },
+  { id: 'hunger', name: '空缺', subtitle: '一点点，再一点点', hp: 29, kind: 'normal', pattern: [{ type: 'attack', damage: 3, hits: 2 }, { type: 'attack', damage: 7, hits: 1 }, { type: 'guard', block: 6 }] },
+  { id: 'flicker', name: '闪回', subtitle: '熟悉的动作先于思考', hp: 25, kind: 'normal', pattern: [{ type: 'guard', block: 4 }, { type: 'attack', damage: 4, hits: 2 }, { type: 'attack', damage: 9, hits: 1 }] },
+  { id: 'habit', name: '惯性', subtitle: '第二天，路开始变窄', hp: 44, kind: 'elite', pattern: [{ type: 'attack', damage: 9, hits: 1 }, { type: 'guard', block: 8 }, { type: 'attack', damage: 4, hits: 3 }] },
+  { id: 'bargain', name: '借口', subtitle: '只是这一次', hp: 42, kind: 'elite', pattern: [{ type: 'attack', damage: 4, hits: 2 }, { type: 'attack', damage: 11, hits: 1 }, { type: 'guard', block: 10 }] },
+  { id: 'undertow', name: '回流', subtitle: '把你带回熟悉的地方', hp: 43, kind: 'late', pattern: [{ type: 'attack', damage: 10, hits: 1 }, { type: 'guard', block: 8 }, { type: 'attack', damage: 4, hits: 3 }] },
+  { id: 'noise', name: '噪声', subtitle: '听见它，不必跟随它', hp: 40, kind: 'late', pattern: [{ type: 'attack', damage: 4, hits: 3 }, { type: 'attack', damage: 10, hits: 1 }, { type: 'guard', block: 7 }] },
+  { id: 'secondself', name: '另一个我', subtitle: '这一次，由谁先伸手', hp: 65, kind: 'boss', pattern: [{ type: 'attack', damage: 11, hits: 1 }, { type: 'guard', block: 10 }, { type: 'attack', damage: 4, hits: 3 }, { type: 'attack', damage: 14, hits: 1 }] },
+];
+
+
+const ENGLISH_CARDS = {"strike": ["Strike", "Deal 6 damage.", "6"], "guard": ["Guard", "Gain 6 guard. Guard resets next turn.", "6"], "flurry": ["Flurry", "Hit 3 times for 2 damage each.", "2 \u00d7 3"], "venom": ["Venom", "Deal 2 damage. Add 4 poison. Poison bypasses guard at turn end.", "2 + 4"], "needle": ["Needle", "Deal 3 damage. Draw 1. Removed for this fight.", "3 + 1"], "quickstep": ["Step", "Gain 4 guard. Draw 1. Removed for this fight.", "4 + 1"], "echo": ["Echo", "Deal 4 damage. Draw 2.", "4 + 2"], "bloom": ["Bloom", "Add 9 poison. Poison ticks at turn end, then loses 1.", "9"], "catalyst": ["Spread", "Double poison. If none, add 3.", "\u00d7 2"], "shieldbash": ["Bash", "Gain 3 guard, then deal damage equal to your guard.", "3 + \u25c7"], "bulwark": ["Shelter", "Gain 15 guard.", "15"], "riposte": ["Return", "Gain 6 guard. Each blocked hit returns 3 damage this turn.", "6 \u21a9 3"], "shred": ["Shatter", "Hit 3 times for 5 damage each.", "5 \u00d7 3"], "renew": ["Breathe", "Restore 5 health. Removed for this fight.", "+5"], "focus": ["Focus", "Gain 1 energy. Draw 1. Removed for this fight.", "+1 +1"]};
+const ENGLISH_RELICS = {"razor": ["Serrated Edge", "Every attack hit deals +1 damage."], "spore": ["Night Seed", "Each poison application adds +2 poison."], "buckle": ["Old Clasp", "Start each fight with 8 guard."], "mirror": ["Split Mirror", "Every third attack hit in a turn gives +1 energy."], "anchor": ["Anchor", "Each card that grants guard gives +2 guard."], "thorns": ["Thorn Ring", "Each blocked hit returns 3 damage."], "pocket": ["Deep Pocket", "Draw one extra card each turn."], "lantern": ["Still Flame", "Restore 2 health after a turn without borrowing."]};
+const ENGLISH_ENEMIES = {"murmur": ["Whisper", "It knows a reason."], "hunger": ["Hollow", "Just a little more."], "flicker": ["Flicker", "A familiar motion."], "habit": ["The Narrowing", "The table feels smaller."], "bargain": ["One More", "Only this once."], "undertow": ["Undertow", "The familiar pulls."], "noise": ["Static", "You can hear it."], "secondself": ["The Other Hand", "Who moves first?"]};
+CARD_DEFS.forEach(c=>{[c.name,c.description,c.value]=ENGLISH_CARDS[c.id];});
+RELIC_DEFS.forEach(r=>{[r.name,r.description]=ENGLISH_RELICS[r.id];});
+ENEMY_DEFS.forEach(e=>{[e.name,e.subtitle]=ENGLISH_ENEMIES[e.id];});
+
+const CARD_BY_ID = new Map(CARD_DEFS.map((card) => [card.id, card]));
+const RELIC_BY_ID = new Map(RELIC_DEFS.map((relic) => [relic.id, relic]));
+const STARTER = ['strike', 'strike', 'strike', 'strike', 'guard', 'guard', 'guard', 'flurry', 'venom'];
+const REWARD_POOL = CARD_DEFS.filter((card) => card.rarity !== 'starter');
+const clone = (value) => JSON.parse(JSON.stringify(value));
+
+function hashSeed(value) {
+  const text = String(value);
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i += 1) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+  return hash >>> 0;
+}
+
+class Game {
+  constructor({ seed = Date.now().toString(36) } = {}) {
+    this.seed = String(seed);
+    this._rngState = hashSeed(this.seed);
+    this._instanceCounter = 0;
+    this._logCounter = 0;
+    this.state = this._emptyState();
+  }
+
+  _emptyState() {
+    return {
+      phase: 'title', rewardStage: null, seed: this.seed, room: 0, totalRooms: 5, turn: 0,
+      player: { hp: 42, maxHp: 42, block: 0, energy: 3, maxEnergy: 3, counter: 0 },
+      enemy: null, hand: [], drawPile: [], discardPile: [], exhaustPile: [], deck: [], relics: [],
+      cardChoices: [], relicChoices: [], chosenCard: null, chosenRelic: null,
+      dependence: 0, unassistedTurns: 0, shadowUsedThisTurn: false, shadowUses: 0,
+      stats: { cardsPlayed: 0, damageDealt: 0, shadowUses: 0, battlesWon: 0 },
+      log: [], ending: null, recoveryAmount: 6,
+    };
+  }
+
+  _random() {
+    this._rngState = (this._rngState + 0x6D2B79F5) >>> 0;
+    let value = this._rngState;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  }
+
+  _shuffle(values) {
+    const array = values.slice();
+    for (let i = array.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(this._random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  _instance(cardId) { return { instanceId: `card-${++this._instanceCounter}`, cardId }; }
+  _hasRelic(id) { return this.state.relics.some((relic) => relic.id === id); }
+  _log(text, tone = 'normal') {
+    this.state.log.push({ id: ++this._logCounter, text, tone });
+    this.state.log = this.state.log.slice(-8);
+  }
+  _fail(message) { return { ok: false, message }; }
+
+  start(seed = this.seed) {
+    this.seed = String(seed);
+    this._rngState = hashSeed(this.seed);
+    this._instanceCounter = 0;
+    this._logCounter = 0;
+    this.state = this._emptyState();
+    this.state.deck = STARTER.map((id) => this._instance(id));
+    this.state.room = 1;
+    this._log('影子：先看看对方的意图。你可以自己出牌，也可以让我帮忙。', 'shadow');
+    this._beginBattle();
+    return { ok: true };
+  }
+
+  _beginBattle() {
+    const s = this.state;
+    const kind = s.room === 3 ? 'elite' : s.room === 4 ? 'late' : s.room === 5 ? 'boss' : 'normal';
+    const pool = ENEMY_DEFS.filter((enemy) => enemy.kind === kind);
+    const def = pool[Math.floor(this._random() * pool.length)];
+    const extraHp = s.room === 2 ? 5 : 0;
+    s.enemy = { ...clone(def), maxHp: def.hp + extraHp, hp: def.hp + extraHp, block: 0, poison: 0, intentIndex: 0 };
+    s.phase = 'combat';
+    s.rewardStage = null;
+    s.cardChoices = [];
+    s.relicChoices = [];
+    s.chosenCard = null;
+    s.chosenRelic = null;
+    s.turn = 0;
+    s.hand = [];
+    s.drawPile = this._shuffle(s.deck.map((card) => ({ ...card })));
+    s.discardPile = [];
+    s.exhaustPile = [];
+    s.player.block = 0;
+    s.player.counter = 0;
+    this._startTurn();
+    if (this._hasRelic('buckle')) s.player.block += 8;
+    this._log(`第 ${s.room} 道门 · ${s.enemy.name}`, 'room');
+  }
+
+  _startTurn() {
+    const s = this.state;
+    s.turn += 1;
+    s.player.energy = s.player.maxEnergy;
+    s.player.block = 0;
+    s.player.counter = 0;
+    s.shadowUsedThisTurn = false;
+    this._turnHits = 0;
+    this._draw(5 + (this._hasRelic('pocket') ? 1 : 0));
+    this._updateIntent();
+  }
+
+  _updateIntent() {
+    const enemy = this.state.enemy;
+    const raw = enemy.pattern[enemy.intentIndex % enemy.pattern.length];
+    const bonus = this.state.room === 2 && raw.type === 'attack' ? 1 : 0;
+    enemy.intent = { ...raw };
+    if (raw.type === 'attack') {
+      enemy.intent.damage += bonus;
+      enemy.intent.label = raw.hits > 1 ? `攻击 ${enemy.intent.damage} × ${raw.hits}` : `攻击 ${enemy.intent.damage}`;
+    } else {
+      enemy.intent.label = `获得 ${raw.block} 护盾`;
+    }
+  }
+
+  _draw(count) {
+    const s = this.state;
+    for (let i = 0; i < count; i += 1) {
+      if (!s.drawPile.length && s.discardPile.length) {
+        s.drawPile = this._shuffle(s.discardPile);
+        s.discardPile = [];
+      }
+      if (!s.drawPile.length) break;
+      s.hand.push(s.drawPile.pop());
+    }
+  }
+
+  _gainBlock(amount) { this.state.player.block += amount + (this._hasRelic('anchor') ? 2 : 0); }
+  _heal(amount) {
+    const player = this.state.player;
+    const healed = Math.min(amount, player.maxHp - player.hp);
+    player.hp += healed;
+    return healed;
+  }
+  _poison(amount) { this.state.enemy.poison += amount + (this._hasRelic('spore') ? 2 : 0); }
+
+  _damageEnemy(amount, { ignoreBlock = false, attack = false } = {}) {
+    const s = this.state;
+    if (s.enemy.hp <= 0) return;
+    const boosted = amount + (attack && this._hasRelic('razor') ? 1 : 0);
+    const absorbed = ignoreBlock ? 0 : Math.min(boosted, s.enemy.block);
+    s.enemy.block -= absorbed;
+    const damage = Math.min(s.enemy.hp, boosted - absorbed);
+    s.enemy.hp -= damage;
+    s.stats.damageDealt += damage;
+    if (attack) {
+      this._turnHits += 1;
+      if (this._hasRelic('mirror') && this._turnHits % 3 === 0) {
+        s.player.energy += 1;
+        this._log('裂纹镜：第三次命中，获得 1 点能量。', 'relic');
+      }
+    }
+  }
+
+  playCard(instanceId) {
+    const s = this.state;
+    if (s.phase !== 'combat') return this._fail('现在不能出牌。');
+    const index = s.hand.findIndex((card) => card.instanceId === instanceId);
+    if (index < 0) return this._fail('这张牌不在手中。');
+    const def = CARD_BY_ID.get(s.hand[index].cardId);
+    if (s.player.energy < def.cost) return this._fail('能量不足。');
+    this._resolveCard(index, false);
+    return { ok: true };
+  }
+
+  _resolveCard(index, shadow) {
+    const s = this.state;
+    const [card] = s.hand.splice(index, 1);
+    const def = CARD_BY_ID.get(card.cardId);
+    s.player.energy -= def.cost;
+    s.stats.cardsPlayed += 1;
+    this._log(`${shadow ? '影子抢先打出' : '打出'}「${def.name}」${shadow ? `，消耗 ${def.cost} 点能量。` : '。'}`, shadow ? 'shadow' : 'card');
+    switch (card.cardId) {
+      case 'strike': this._damageEnemy(6, { attack: true }); break;
+      case 'guard': this._gainBlock(6); break;
+      case 'flurry': for (let n = 0; n < 3 && s.enemy.hp > 0; n += 1) this._damageEnemy(2, { attack: true }); break;
+      case 'venom': this._damageEnemy(2, { attack: true }); this._poison(4); break;
+      case 'needle': this._damageEnemy(3, { attack: true }); this._draw(1); break;
+      case 'quickstep': this._gainBlock(4); this._draw(1); break;
+      case 'echo': this._damageEnemy(4, { attack: true }); this._draw(2); break;
+      case 'bloom': this._poison(9); break;
+      case 'catalyst': if (s.enemy.poison) s.enemy.poison *= 2; else this._poison(3); break;
+      case 'shieldbash': this._gainBlock(3); this._damageEnemy(s.player.block, { attack: true }); break;
+      case 'bulwark': this._gainBlock(15); break;
+      case 'riposte': this._gainBlock(6); s.player.counter += 3; break;
+      case 'shred': for (let n = 0; n < 3 && s.enemy.hp > 0; n += 1) this._damageEnemy(5, { attack: true }); break;
+      case 'renew': this._heal(5); break;
+      case 'focus': s.player.energy += 1; this._draw(1); break;
+      default: throw new Error(`Unknown card: ${card.cardId}`);
+    }
+    (def.tags.includes('exhaust') ? s.exhaustPile : s.discardPile).push(card);
+    if (s.enemy.hp <= 0) this._winBattle();
+  }
+
+  useShadow() {
+    const s = this.state;
+    if (s.phase !== 'combat') return this._fail('现在无法求助。');
+    if (s.shadowUsedThisTurn) return this._fail('每回合只能向影子求助一次。');
+    s.shadowUsedThisTurn = true;
+    s.shadowUses += 1;
+    s.stats.shadowUses += 1;
+    s.dependence = Math.min(6, s.dependence + 1);
+    s.unassistedTurns = 0;
+    s.player.energy += 2;
+    this._draw(1);
+    this._log(s.dependence >= 3 ? '影子：交给我。你只需要继续叫我。［+2 能量，抽 1 张；它可能替你出牌］' : '影子：让我帮你。［+2 能量，抽 1 张；依赖 +1］', 'shadow');
+    return { ok: true };
+  }
+
+  _eligibleCards() {
+    return this.state.hand.map((card, index) => ({ card, index })).filter(({ card }) => CARD_BY_ID.get(card.cardId).cost <= this.state.player.energy);
+  }
+
+  endTurn() {
+    const s = this.state;
+    if (s.phase !== 'combat') return this._fail('现在不能结束回合。');
+    // Capture takeover eligibility before recovery lowers dependence. Settle
+    // completed-turn benefits before an automatic lethal card can end combat.
+    const eligible = s.dependence >= 3 ? this._eligibleCards() : [];
+    if (!s.shadowUsedThisTurn) {
+      s.unassistedTurns += 1;
+      if (s.dependence > 0 && s.unassistedTurns % 2 === 0) {
+        s.dependence -= 1;
+        this._log('你连续两个回合自己行动。依赖 −1。', 'recovery');
+      }
+      if (this._hasRelic('lantern')) this._heal(2);
+    }
+
+    // At high dependence the companion acts before the player's chosen end.
+    if (eligible.length) {
+      const picked = eligible[Math.floor(this._random() * eligible.length)];
+      this._resolveCard(picked.index, true);
+      if (s.phase !== 'combat') return { ok: true };
+    }
+
+    s.discardPile.push(...s.hand);
+    s.hand = [];
+
+    if (s.enemy.poison > 0) {
+      const amount = s.enemy.poison;
+      this._damageEnemy(amount, { ignoreBlock: true });
+      s.enemy.poison -= 1;
+      this._log(`余毒造成 ${amount} 点伤害。`, 'poison');
+      if (s.enemy.hp <= 0) { this._winBattle(); return { ok: true }; }
+    }
+
+    s.enemy.block = 0;
+    const intent = s.enemy.intent;
+    if (intent.type === 'guard') {
+      s.enemy.block = intent.block;
+      this._log(`${s.enemy.name}获得 ${intent.block} 点护盾。`, 'enemy');
+    } else {
+      let totalDamage = 0;
+      let blocked = 0;
+      for (let hit = 0; hit < intent.hits; hit += 1) {
+        const absorbed = Math.min(s.player.block, intent.damage);
+        s.player.block -= absorbed;
+        blocked += absorbed;
+        const damage = Math.min(s.player.hp, intent.damage - absorbed);
+        s.player.hp -= damage;
+        totalDamage += damage;
+        if (absorbed > 0) {
+          const counter = s.player.counter + (this._hasRelic('thorns') ? 3 : 0);
+          if (counter) this._damageEnemy(counter);
+        }
+        if (s.player.hp <= 0 || s.enemy.hp <= 0) break;
+      }
+      this._log(`${s.enemy.name}攻击：受到 ${totalDamage} 点伤害${blocked ? `，挡住 ${blocked} 点` : ''}。`, 'enemy');
+      if (s.player.hp <= 0) {
+        s.phase = 'defeat';
+        s.ending = 'try-again';
+        this._log('这次停在了这里。带着发现，重新开始。', 'ending');
+        return { ok: true };
+      }
+      if (s.enemy.hp <= 0) { this._winBattle(); return { ok: true }; }
+    }
+    s.enemy.intentIndex += 1;
+    this._startTurn();
+    return { ok: true };
+  }
+
+  _winBattle() {
+    const s = this.state;
+    if (s.phase !== 'combat') return;
+    s.stats.battlesWon += 1;
+    this._log(`${s.enemy.name}退去了。`, 'win');
+    if (s.room === s.totalRooms) {
+      s.phase = 'victory';
+      s.ending = s.dependence === 0 ? 'independent' : 'with-shadow';
+      this._log(s.dependence === 0 ? '这次，你先迈出了脚步。影子回到了你的脚下。' : '你走到了门外。影子仍然在，但接下来仍由你选择。', 'ending');
+      return;
+    }
+    s.phase = 'reward';
+    s.rewardStage = 'card';
+    s.cardChoices = this._shuffle(REWARD_POOL).slice(0, 3).map((card) => ({ ...card }));
+    s.relicChoices = this._shuffle(RELIC_DEFS.filter((relic) => !this._hasRelic(relic.id))).slice(0, 3).map((relic) => ({ ...relic }));
+  }
+
+  chooseCard(cardId) {
+    const s = this.state;
+    if (s.phase !== 'reward' || s.rewardStage !== 'card') return this._fail('现在不能选择卡牌。');
+    if (!s.cardChoices.some((card) => card.id === cardId)) return this._fail('这张牌不在奖励中。');
+    s.deck.push(this._instance(cardId));
+    s.chosenCard = cardId;
+    s.rewardStage = 'relic';
+    this._log(`将「${CARD_BY_ID.get(cardId).name}」加入牌组。`, 'reward');
+    return { ok: true };
+  }
+
+  chooseRelic(relicId) {
+    const s = this.state;
+    if (s.phase !== 'reward' || s.rewardStage !== 'relic') return this._fail('先选择一张卡牌。');
+    if (!s.relicChoices.some((relic) => relic.id === relicId) || this._hasRelic(relicId)) return this._fail('这件遗物不在奖励中。');
+    const relic = { ...RELIC_BY_ID.get(relicId) };
+    s.relics.push(relic);
+    s.chosenRelic = relicId;
+    s.rewardStage = 'ready';
+    this._log(`获得遗物「${relic.name}」。`, 'reward');
+    return { ok: true };
+  }
+
+  continueRun() {
+    const s = this.state;
+    if (s.phase !== 'reward' || s.rewardStage !== 'ready') return this._fail('先选择卡牌与遗物。');
+    const healed = this._heal(s.recoveryAmount);
+    if (healed) this._log(`门后的短暂休息，恢复 ${healed} 点生命。`, 'recovery');
+    s.room += 1;
+    this._beginBattle();
+    return { ok: true };
+  }
+
+  getState() {
+    const snapshot = clone(this.state);
+    const enrich = (cards) => cards.map((card) => ({ ...CARD_BY_ID.get(card.cardId), ...card }));
+    for (const pile of ['hand', 'drawPile', 'discardPile', 'exhaustPile', 'deck']) snapshot[pile] = enrich(snapshot[pile]);
+    snapshot.drawCount = snapshot.drawPile.length;
+    snapshot.discardCount = snapshot.discardPile.length;
+    snapshot.exhaustCount = snapshot.exhaustPile.length;
+    snapshot.shadowWillIntervene = snapshot.phase === 'combat' && snapshot.dependence >= 3 && this._eligibleCards().length > 0;
+    snapshot.shadowRecoveryIn = snapshot.dependence > 0 ? 2 - snapshot.unassistedTurns % 2 : 0;
+    return snapshot;
+  }
+}
+
+const $=id=>document.getElementById(id);
+const safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const seed=()=>Array.from(crypto.getRandomValues(new Uint8Array(5)),x=>x.toString(36)).join('');
+const requested=new URL(location.href).searchParams.get('seed');
+let game=new Game({seed:requested||seed()}),state=game.getState(),soundOn=false,audio,lightTimer,claimTimer,lastFocus;
+const paths={
+ attack:'<path d="M20 60 57 17l8-5-2 13-37 42M18 53l17 15m-11-7-9 11m-3-3 7 7"/>',
+ guard:'<path d="M40 9 65 20l-3 23c-3 15-12 23-22 30-10-7-19-15-22-30l-3-23ZM40 20v40M25 30h30"/>',
+ draw:'<path d="m10 26 18-7 22 49-18 7ZM31 11h20v55M57 19l16 7-22 43M36 34h12m-6-6v12"/>',
+ poison:'<path d="M33 10h14m-11 0v22L18 60q-3 10 8 10h28q11 0 8-10L44 32V10M24 48h32M30 57h20M33 64h14"/>',
+ heal:'<path d="M40 11C36 28 18 37 18 51c0 28 44 28 44 0 0-14-18-23-22-40ZM40 38v23M29 50h22"/>',
+ energy:'<path d="M47 9 18 45h22l-7 27 30-40H42Z"/>',
+ counter:'<path d="M56 24A26 26 0 1 0 62 57M55 9v18H37M24 56l31-32M26 46l10 11"/>'};
+function icon(kind){return `<svg viewBox="0 0 80 80" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${paths[kind]||paths.draw}</svg>`;}
+function kind(c){return c.tags.includes('heal')?'heal':c.tags.includes('poison')?'poison':c.tags.includes('counter')?'counter':c.tags.includes('block')?'guard':c.tags.includes('energy')?'energy':c.type==='attack'?'attack':'draw';}
+function cards(list,reward=false){return list.map((c,i)=>`<button class="card" data-kind="${kind(c)}" data-card="${safe(reward?c.id:c.instanceId)}" data-action="${reward?'reward-card':'card'}" ${!reward&&(state.phase!=='combat'||c.cost>state.player.energy)?'disabled':''} aria-label="${safe(c.name+', '+c.cost+' energy. '+c.description)}" title="${safe(c.description)}"><span class="cost">${c.cost}</span><small>${reward?'CHOOSE':i+1}</small><span class="card-art">${icon(kind(c))}</span><strong class="card-name">${safe(c.name)}</strong><span class="value">${safe(c.value)}</span></button>`).join('');}
+function shadow(){return `<svg class="shadow-hand" viewBox="640 0 680 540" aria-hidden="true"><path d="M1263-70C1180 11 1123 64 1102 137c-10 39-51 64-93 95l-78 63c-19 18-9 40 11 30l58-34c-29 38-73 92-105 149-21 37-6 61 14 36l100-128c-17 45-43 103-53 141-9 34 11 46 25 12l64-134c-12 44-22 85-25 110-3 31 20 31 26 4l34-115c-1 25 2 51 7 68 11 32 30 17 22-10-7-35 8-74 31-106 28-37 24-67 29-93 9-46 68-72 151-100Z" fill="#080e0a" stroke="#7c9062" stroke-opacity=".28" stroke-width="2"/><path d="M1088 186q-6 53-67 103m69-31q-9 44-40 79m96-87q-6 37-31 61" fill="none" stroke="#7c9062" stroke-opacity=".18" stroke-width="2"/></svg>`;}
+function portrait(){return `<svg class="portrait" viewBox="0 0 180 200" aria-hidden="true"><path d="M35 181c-1-43 10-70 32-82-16-32-10-74 15-80 34-10 52 36 36 77 23 17 30 46 29 85Z" fill="#10190f" stroke="#aebe9a" stroke-width="1"/><path d="m72 63 13 2m15-1 13-2M87 83h13m-20 26-13 52m40-54 14 55M77 132l14 12 17-14" fill="none" stroke="#aebe9a"/><path d="m91 151 9 12-9 13-9-13Z" fill="#aebe9a" opacity=".5"/></svg>`;}
+function pips(){return `<span class="pips" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i class="${i<state.dependence?'on':''}"></i>`).join('')}</span>`;}
+function render(){
+ state=game.getState();const s=state,e=s.enemy,combat=s.phase==='combat',title=s.phase==='title';
+ $('progress').textContent=title?'Five encounters · a new deal each time':`Encounter ${s.room} / 5 · ${['','First Light','Echoes','The Narrowing','Undertow','The Other Hand'][s.room]}`;
+ $('hp').textContent=s.player.hp+' / '+s.player.maxHp; $('energy').textContent=s.player.energy; $('guard').textContent=s.player.block;
+ $('hand-head').hidden=!(combat||title);$('hand').hidden=!(combat||title);$('turn').hidden=!combat;
+ if(title){
+  $('stage').innerHTML=`${shadow()}<div class="welcome"><span class="label">A seat is waiting.</span><h1>Your cards.<br>Another hand.</h1><p>Read the next move. Play a card.<br>Build something the shadow cannot choose for you.</p><button class="primary" data-action="start">TAKE A SEAT</button></div><div class="welcome-art">${icon('draw')}</div>`;
+  $('hand').innerHTML=cards(CARD_DEFS.filter(c=>['strike','guard','flurry','venom','focus'].includes(c.id)));
+ }else if(combat){
+  const intent=e.intent.type==='guard'?`◇ ${e.intent.block} guard`:`⚔ ${e.intent.damage}${e.intent.hits>1?' × '+e.intent.hits:''}`;
+  const whisper=s.dependence>=3?'“I know your next move.”':s.shadowUsedThisTurn?'“See? Easier together.”':s.dependence?'“Only a little more.”':'“Your move. I can wait.”';
+  $('stage').innerHTML=`${shadow()}${portrait()}<div class="enemy"><span class="label">Across the table</span><h1>${safe(e.name)}</h1><p>${safe(e.subtitle)}</p><div class="enemy-info"><span>♡ ${e.hp} / ${e.maxHp}</span><span title="The opponent’s next action">Next: ${intent}</span>${e.block?`<span>◇ ${e.block}</span>`:''}${e.poison?`<span title="Poison damage at turn end">☘ ${e.poison}</span>`:''}</div><div class="hp-track" role="progressbar" aria-label="Opponent health" aria-valuenow="${e.hp}" aria-valuemax="${e.maxHp}" aria-valuemin="0"><i style="width:${e.hp/e.maxHp*100}%"></i></div></div><aside class="companion" aria-label="Shadow offer"><p class="whisper">${whisper}</p><button class="borrow" data-action="borrow" ${s.shadowUsedThisTurn?'disabled':''} aria-label="Borrow: gain 2 energy and draw 1 card. Tether increases by 1. At 3, the shadow may play a remaining card on End Turn."><span>${s.shadowUsedThisTurn?'BORROWED':'BORROW'}</span><span>+2 ⚡ &nbsp; +1 ▱</span></button><div class="price"><span>Tether ${s.dependence}/6</span>${pips()}<span>+1 per use</span></div><p class="recovery">${s.dependence>=3?'At 3: the shadow may play a card on End Turn.':s.dependence?'Two turns without borrowing loosen the tether.':'Help has a price. Your cards can be enough.'}</p></aside>`;
+  $('hand').innerHTML=cards(s.hand);$('pile').textContent=`Draw ${s.drawCount} · Discard ${s.discardCount}`;
+  $('turn-label').textContent='Turn '+s.turn;
+ }else if(s.phase==='reward'){
+  $('stage').innerHTML=`${shadow()}<div class="reward"><span class="label">Something remains.</span><h1>${s.rewardStage==='card'?'Choose a possibility.':s.rewardStage==='relic'?'Let a combination grow.':'Carry it forward.'}</h1><p>${s.rewardStage==='card'?'One card joins your deck.':s.rewardStage==='relic'?'One relic stays with you.':'Recover up to 6 health before the next encounter.'}</p>${s.rewardStage==='card'?`<div class="reward-options">${cards(s.cardChoices,true)}</div>`:s.rewardStage==='relic'?`<div class="reward-options">${s.relicChoices.map(r=>`<button class="relic-choice" data-action="reward-relic" data-relic="${r.id}"><span>${r.symbol}</span><strong>${safe(r.name)}</strong><p>${safe(r.description)}</p></button>`).join('')}</div>`:`<button class="primary" data-action="continue">NEXT ENCOUNTER →</button>`}</div>`;
+ }else{
+  const won=s.phase==='victory',free=s.dependence===0;
+  $('stage').innerHTML=`${shadow()}<div class="ending"><span class="label">${won?'Beyond the table.':'Another deal awaits.'}</span><h1>${!won?'The hand falls quiet.':free?'This time, you move first.':'You both reach the door.'}</h1><p>${!won?'Keep what you learned. A different combination may change the next run.':free?'The shadow settles behind you. It follows.':'The shadow is still beside you. The next choice is yours.'}</p><p>${s.stats.battlesWon}/5 encounters · ${s.stats.cardsPlayed} cards played · ${s.shadowUses} borrowed moves</p>${won?'<blockquote>Dream without action<br>is hallucination.</blockquote>':''}<div class="ending-actions"><button class="primary" data-action="new">NEW DEAL</button><button class="quiet" data-action="retry">SAME DEAL</button></div></div>`;
+ }
+ $('relics').innerHTML=s.relics.length?s.relics.map(r=>`<button class="relic" data-action="relic" data-relic="${r.id}" aria-label="${safe(r.name+': '+r.description)}">${r.symbol} ${safe(r.name)}</button>`).join(''):'<span class="hint">Relics arrive after a victory.</span>';
+ $('seed').textContent=title?'':'Deal '+s.seed;
+ $('help').setAttribute('aria-expanded',String(!$('overlay').hidden));
+ if(!combat){clearTimeout(lightTimer);document.body.classList.remove('assisted','claimed');}
+}
+function detail(c){$('detail').innerHTML=`<strong>${safe(c.name)}</strong> · ${safe(c.description)}`;}
+function notice(text){$('notice').textContent=text;}
+function tone(kind){if(!soundOn)return;try{audio ||= new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume().catch(()=>{});const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime;o.type='sine';o.frequency.setValueAtTime(kind==='borrow'?196:kind==='hurt'?120:330,t);o.frequency.exponentialRampToValueAtTime(kind==='borrow'?392:kind==='hurt'?70:440,t+.16);g.gain.setValueAtTime(.04,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+.3);}catch{soundOn=false;$('sound').textContent='Sound off';$('sound').setAttribute('aria-pressed','false');}}
+function act(method,value){const before=game.getState(),chosen=method==='playCard'?before.hand.find(c=>c.instanceId===value):null;const result=game[method](value);if(!result.ok){notice('That move is unavailable. Check the energy cost.');return;}render();
+ if(chosen){detail(chosen);tone('card');notice(chosen.name+' played.');}
+ if(method==='useShadow'){clearTimeout(lightTimer);document.body.classList.add('assisted');tone('borrow');notice('+2 energy · +1 card · tether +1');lightTimer=setTimeout(()=>document.body.classList.remove('assisted'),8000);}
+ if(method==='endTurn'){const took=state.log.find(l=>l.id>(before.log.at(-1)?.id||0)&&l.tone==='shadow'&&l.text.includes('抢先'));if(took){clearTimeout(claimTimer);document.body.classList.add('claimed');notice('MY TURN — the shadow played a remaining card and spent its energy.');claimTimer=setTimeout(()=>document.body.classList.remove('claimed'),1600);}else notice(state.dependence<before.dependence?'Your move. The tether loosens.':'A fresh hand. Read the next move.');}
+ if(state.dependence===0)document.body.classList.remove('assisted','claimed');
+ if(state.player.hp<before.player.hp){tone('hurt');if(!document.body.classList.contains('reduced')&&typeof $('hp').animate==='function')$('hp').animate([{opacity:.4},{opacity:1}],{duration:250});}
+ if(state.phase!==before.phase||state.rewardStage!==before.rewardStage){notice(state.phase==='reward'?'A new possibility.':state.phase==='victory'?'The door opens.':state.phase==='defeat'?'Keep the discovery. Try another deal.':'Your move.');$('stage').querySelector('button:not(:disabled)')?.focus({preventScroll:true});}
+ else if(method==='playCard'){const available=$('hand').querySelector('button:not(:disabled)');(available||$('end')).focus({preventScroll:true});}
+}
+function restart(same=false){const next=same?state.seed:seed();clearTimeout(lightTimer);clearTimeout(claimTimer);game=new Game({seed:next});document.body.classList.remove('assisted','claimed');$('detail').textContent='Hover or focus a card for its effect. Tap to play.';act('start');notice('A new hand. Your move.');}
+function sheet(title,content){lastFocus=document.activeElement;$('sheet-title').textContent=title;$('sheet-body').innerHTML=content;$('overlay').hidden=false;$('close').focus();$('help').setAttribute('aria-expanded','true');}
+function closeSheet(){$('overlay').hidden=true;$('help').setAttribute('aria-expanded','false');if(lastFocus?.isConnected)lastFocus.focus();}
+function rules(){sheet('Read. Play. Discover.',`<ul><li>Start each turn with <strong>3 energy</strong> and <strong>5 cards</strong>. The circle is the energy cost.</li><li><strong>Next</strong> shows the opponent’s move. Strike deals damage; guard protects you until your next turn.</li><li>Poison bypasses guard at turn end, then loses one stack. Relics can strengthen combinations.</li><li><strong>Borrow</strong> gives 2 energy and 1 card, once per turn. It also adds 1 tether.</li><li>At <strong>3 tether</strong>, the shadow may play a remaining affordable card when you end your turn. It spends your energy.</li><li>Complete <strong>two turns without borrowing</strong> to lose 1 tether. An independent route is possible.</li></ul><p>Five encounters. Choose cards and relics between fights. Your next deal will be different.</p><p>Keys: 1–9 play · E end turn · S borrow · Escape close</p>`);}
+document.addEventListener('click',event=>{const b=event.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action;
+ if(a==='start')act('start');else if(a==='card')act('playCard',b.dataset.card);else if(a==='borrow')act('useShadow');else if(a==='end')act('endTurn');
+ else if(a==='reward-card')act('chooseCard',b.dataset.card);else if(a==='reward-relic')act('chooseRelic',b.dataset.relic);else if(a==='continue')act('continueRun');
+ else if(a==='new'){if(['combat','reward'].includes(state.phase))sheet('Start another deal?','<p>Your current run will end.</p><button class="primary" data-action="confirm-new">NEW DEAL</button>');else restart();}
+ else if(a==='confirm-new'){closeSheet();restart();}else if(a==='retry')restart(true);else if(a==='help')rules();else if(a==='close')closeSheet();
+ else if(a==='relic'){const r=state.relics.find(r=>r.id===b.dataset.relic);if(r)sheet(r.name,`<p>${safe(r.description)}</p>`);}
+ else if(a==='sound'){soundOn=!soundOn;b.textContent=soundOn?'Sound on':'Sound off';b.setAttribute('aria-pressed',String(soundOn));tone('card');}
+ else if(a==='motion'){const off=document.body.classList.toggle('reduced');b.textContent=off?'Motion off':'Motion on';b.setAttribute('aria-pressed',String(off));}
+});
+for(const type of ['mouseover','focusin'])document.addEventListener(type,event=>{const b=event.target.closest('[data-card]');if(!b)return;const c=(state.phase==='reward'?state.cardChoices:state.hand).find(c=>(c.instanceId||c.id)===b.dataset.card);if(c)detail(c);});
+document.addEventListener('keydown',event=>{if(!$('overlay').hidden){if(event.key==='Escape'){event.preventDefault();closeSheet();}if(event.key==='Tab'){const focus=[...$('overlay').querySelectorAll('button,a[href]')];if(event.shiftKey&&document.activeElement===focus[0]){event.preventDefault();focus.at(-1).focus();}else if(!event.shiftKey&&document.activeElement===focus.at(-1)){event.preventDefault();focus[0].focus();}}return;}
+ if(event.ctrlKey||event.metaKey||event.altKey||event.repeat||/INPUT|TEXTAREA|SELECT/.test(event.target.tagName)||state.phase!=='combat')return;
+ const k=event.key.toLowerCase();if(k==='e'){event.preventDefault();act('endTurn');}else if(k==='s'){event.preventDefault();act('useShadow');}else if(/^[1-9]$/.test(k)){event.preventDefault();const c=state.hand[+k-1];if(c)act('playCard',c.instanceId);}
+});
+if(matchMedia('(prefers-reduced-motion: reduce)').matches){document.body.classList.add('reduced');$('motion').textContent='Motion off';$('motion').setAttribute('aria-pressed','true');}
+render();
+</script></body></html>
