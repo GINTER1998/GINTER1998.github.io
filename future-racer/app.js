@@ -1,5 +1,5 @@
 import {MusicPlayer,demoProfile,generateDemo,featureAt,clamp} from './music.js';
-import {buildTrack,initialCar,stepCar,startBoost,sampleTrack} from './track.js?v=20261108-3';
+import {buildTrack,initialCar,stepCar,startBoost,sampleTrack} from './track.js?v=20261108-4';
 import {RaceScene} from './scene.js?v=20261108-3';
 const $=id=>document.getElementById(id),player=new MusicPlayer();
 let profile=demoProfile(),track=buildTrack(profile),car=initialCar(track),scene,state='loading',title='CONCRETE AFTER HOURS',isDemo=true,loading=false,worker=null,loadId=0,keys=new Set(),accumulator=0,previous=performance.now(),uiClock=0,toastTimer,lowQuality=false,fpsTime=0,fpsFrames=0,fps=0;

@@ -49,12 +49,13 @@ export function stepCar(car,input,dt,track){
  if(brake)acceleration-=Math.sign(car.speed)*18;
  const old=car.speed;car.speed=clamp(car.speed+acceleration*dt,-8,Math.max(old,limit));
  if(!throttle&&!input.reverse&&Math.abs(car.speed)<.02||brake&&old*car.speed<=0)car.speed=0;
- const key=Number(!!input.left)-Number(!!input.right),keyWeight=1-.45*clamp((Math.abs(car.speed)*3.6-10)/50),command=key*keyWeight,profile=steeringProfile(car.speed);
+ const key=Number(!!input.left)-Number(!!input.right),keyWeight=1-.35*clamp((Math.abs(car.speed)*3.6-10)/50),command=key*keyWeight,profile=steeringProfile(car.speed);
  // Digital keys progressively move the rack; a tap never applies full wheel lock.
- const attack=Math.abs(car.speed)>5?.48:.24,release=.105;
+ const reversing=command*(car.steerInput||0)<0;
+ const attack=reversing?.10:Math.abs(car.speed)>5?.18:.12,release=.07;
  car.steerInput=(car.steerInput||0)+(command-(car.steerInput||0))*(1-Math.exp(-dt/(command?attack:release)));
  const target=Math.sign(car.steerInput)*Math.abs(car.steerInput)**profile.exponent;
- car.rack=(car.rack||0)+(target-(car.rack||0))*(1-Math.exp(-dt*profile.rackRate));
+ car.rack=(car.rack||0)+(target-(car.rack||0))*(1-Math.exp(-dt*profile.rackRate*(command?1.4:1.8)));
  const angle=car.rack*profile.lock,gripLock=Math.atan(2.368*13/Math.max(16,car.speed*car.speed));
  car.steer=clamp(angle,-gripLock,gripLock);
  car.heading+=Math.tan(car.steer)*car.speed/2.368*dt;
