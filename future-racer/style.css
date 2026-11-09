@@ -8,3 +8,5 @@
 @media(max-height:760px) and (min-width:800px){.intro{top:29vh}.music-panel{top:23vh}}
 @media(max-width:640px){.intro{top:auto}.music-panel{top:auto}}
 .music-panel .drop-zone .upload-icon{font-size:24px;opacity:1}
+
+.racing .vignette{background:linear-gradient(0deg,rgba(0,8,8,.24),transparent 30%,transparent 85%,rgba(0,8,8,.10))}

@@ -1,6 +1,6 @@
 import {MusicPlayer,demoProfile,generateDemo,featureAt,clamp} from './music.js';
-import {buildTrack,initialCar,stepCar,startBoost,sampleTrack} from './track.js';
-import {RaceScene} from './scene.js?v=20261108-2';
+import {buildTrack,initialCar,stepCar,startBoost,sampleTrack} from './track.js?v=20261108-3';
+import {RaceScene} from './scene.js?v=20261108-3';
 const $=id=>document.getElementById(id),player=new MusicPlayer();
 let profile=demoProfile(),track=buildTrack(profile),car=initialCar(track),scene,state='loading',title='CONCRETE AFTER HOURS',isDemo=true,loading=false,worker=null,loadId=0,keys=new Set(),accumulator=0,previous=performance.now(),uiClock=0,toastTimer,lowQuality=false,fpsTime=0,fpsFrames=0,fps=0;
 const formatTime=t=>`${String(Math.floor(Math.max(0,t)/60)).padStart(2,'0')}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`;
@@ -55,7 +55,7 @@ function finish(reached){
  $('finish-title').textContent=reached?'FINISH':'TIME UP';
  $('result-distance').textContent=(car.distance/1000).toFixed(2);$('result-speed').textContent=Math.round(car.maxSpeed*3.6);$('result-progress').textContent=Math.round(clamp(car.s/track.length)*100);
 }
-function resetToRoad(){const p=sampleTrack(track,car.s);car.x=p.x;car.z=p.z;car.heading=p.heading;car.speed=0;car.steer=0;}
+function resetToRoad(){const p=sampleTrack(track,car.s);car.x=p.x;car.z=p.z;car.heading=p.heading;car.speed=0;car.steer=0;car.vx=0;car.vz=0;car.rack=0;car.steerInput=0;car.contactTimer=0;car.contactYaw=0;}
 $('audio-file').addEventListener('change',e=>loadAudio(e.target.files[0]));
 for(const event of ['dragenter','dragover'])$('drop-zone').addEventListener(event,e=>{e.preventDefault();$('drop-zone').classList.add('dragging');});
 for(const event of ['dragleave','drop'])$('drop-zone').addEventListener(event,e=>{e.preventDefault();$('drop-zone').classList.remove('dragging');if(event==='drop')loadAudio(e.dataTransfer.files[0]);});
@@ -93,7 +93,7 @@ function frame(now){
  }
  const idle=state==='menu'||state==='loading';scene.render(car,state==='paused'?0:dt,t,featureAt(profile,t),keys.has('Space')||keys.has('ArrowDown'),idle,state==='running'||state==='paused');
  uiClock+=dt;if(uiClock>.08){uiClock=0;if(!idle)updateHUD(t);}
- $('world').dataset.qa=JSON.stringify({state,speed:Math.round(car.speed*3.6),s:Math.round(car.s),audioTime:Math.round(t*100)/100,boost:Math.round(car.boost*100)/100,nitro:Math.round(car.nitro*100)/100,fps,drawCalls:scene.renderer.info.render.calls,vehicle:scene.vehicleInfo?.id,parts:scene.vehicleInfo?.parts,bpm:profile.bpm,duration:profile.duration,trackLength:track.length});
+ $('world').dataset.qa=JSON.stringify({state,speed:Math.round(car.speed*3.6),s:Math.round(car.s),audioTime:Math.round(t*100)/100,boost:Math.round(car.boost*100)/100,nitro:Math.round(car.nitro*100)/100,fps,drawCalls:scene.renderer.info.render.calls,vehicle:scene.vehicleInfo?.id,parts:scene.vehicleInfo?.parts,bpm:profile.bpm,duration:profile.duration,trackLength:track.length,steer:car.steer,steerInput:car.steerInput,heading:car.heading,gauge:car.nitro,city:scene.cityStats});
 }
 try{
  scene=new RaceScene($('world'));scene.setTrack(track);updateProfile();scene.renderer.setAnimationLoop(frame);
