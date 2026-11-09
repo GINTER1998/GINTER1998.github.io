@@ -49,19 +49,22 @@ export function stepCar(car,input,dt,track){
  if(brake)acceleration-=Math.sign(car.speed)*18;
  const old=car.speed;car.speed=clamp(car.speed+acceleration*dt,-8,Math.max(old,limit));
  if(!throttle&&!input.reverse&&Math.abs(car.speed)<.02||brake&&old*car.speed<=0)car.speed=0;
- const key=Number(!!input.left)-Number(!!input.right),keyWeight=1-.35*clamp((Math.abs(car.speed)*3.6-10)/50),command=key*keyWeight,profile=steeringProfile(car.speed);
+ const key=Number(!!input.left)-Number(!!input.right),keyWeight=1-.18*clamp((Math.abs(car.speed)*3.6-10)/50),command=key*keyWeight,profile=steeringProfile(car.speed);
  // Digital keys progressively move the rack; a tap never applies full wheel lock.
  const reversing=command*(car.steerInput||0)<0;
- const attack=reversing?.10:Math.abs(car.speed)>5?.18:.12,release=.07;
+ const attack=reversing?.065:Math.abs(car.speed)>5?.09:.07,release=.05;
  car.steerInput=(car.steerInput||0)+(command-(car.steerInput||0))*(1-Math.exp(-dt/(command?attack:release)));
  const target=Math.sign(car.steerInput)*Math.abs(car.steerInput)**profile.exponent;
- car.rack=(car.rack||0)+(target-(car.rack||0))*(1-Math.exp(-dt*profile.rackRate*(command?1.4:1.8)));
- const angle=car.rack*profile.lock,gripLock=Math.atan(2.368*13/Math.max(16,car.speed*car.speed));
+ car.rack=(car.rack||0)+(target-(car.rack||0))*(1-Math.exp(-dt*profile.rackRate*(command?1.8:2.2)));
+ const angle=car.rack*profile.lock,gripLock=Math.atan(2.368*18/Math.max(16,car.speed*car.speed));
  car.steer=clamp(angle,-gripLock,gripLock);
  car.heading+=Math.tan(car.steer)*car.speed/2.368*dt;
- car.contactTimer=Math.max(0,(car.contactTimer||0)-dt);
- if(car.contactTimer>0&&car.contactTarget!==undefined){const remaining=Math.atan2(Math.sin(car.contactTarget-car.heading),Math.cos(car.contactTarget-car.heading));if(Math.abs(remaining)<Math.PI*75/180)car.contactYaw=Math.sign(remaining)*Math.min(.85,Math.abs(remaining)*4)*Math.min(1,Math.hypot(car.vx||0,car.vz||0)/2);}
- if(car.contactYaw){const remaining=Math.atan2(Math.sin((car.contactTarget||0)-car.heading),Math.cos((car.contactTarget||0)-car.heading)),rotation=car.contactYaw*dt;car.heading+=remaining*rotation>0?Math.sign(rotation)*Math.min(Math.abs(rotation),Math.abs(remaining)):0;car.contactYaw*=Math.exp(-12*dt);}
+ // A blocked car can pivot only while the player steers and applies drive.
+ // Contact never chooses a road heading or overrides the player's steering.
+ if(car.contact&&Math.abs(car.speed)<3&&key&&(input.forward||input.reverse)){
+  const driveDirection=input.reverse&&!input.forward?-1:1;
+  car.heading+=clamp(car.steerInput/Math.max(.1,keyWeight),-1,1)*driveDirection*1.15*dt;
+ }
  const sin=Math.sin(car.heading),cos=Math.cos(car.heading),side=((car.vx||0)*cos-(car.vz||0)*sin)*Math.exp(-9*dt);
  car.vx=sin*car.speed+cos*side;car.vz=cos*car.speed-sin*side;
  car.x+=car.vx*dt;car.z+=car.vz*dt;
@@ -74,20 +77,16 @@ export function stepCar(car,input,dt,track){
  return near;
 }
 export function resolveBodyContact(car,track,dt){
- const bound=BARRIER_HALF-.015,inertia=(2.056**2+4.192**2)/12;
+ const bound=BARRIER_HALF-.015;
  for(let iteration=0;iteration<8;iteration++){
   const sn=Math.sin(car.heading),co=Math.cos(car.heading),contacts=BODY_OUTLINE.map(([lat,long])=>{
    const x=car.x+sn*long+co*lat,z=car.z+co*long-sn*lat,p=nearestTrack(track,x,z,car.s),sign=p.offset>0?1:-1;
    return{depth:Math.abs(p.offset)-bound,nx:Math.cos(p.heading)*sign,nz:-Math.sin(p.heading)*sign,x,z};
   }).sort((a,b)=>b.depth-a.depth),worst=contacts[0];if(worst.depth<-.001)break;
-  const {depth,nx,nz}=worst,support=contacts.filter(p=>p.depth>=depth-.025&&p.nx*nx+p.nz*nz>.98),cx=support.reduce((s,p)=>s+p.x,0)/support.length,cz=support.reduce((s,p)=>s+p.z,0)/support.length,rx=cx-car.x,rz=cz-car.z,lever=rz*nx-rx*nz;
-  const inward=car.vx*nx+car.vz*nz;car.contact=true;car.contactTimer=.16;
-  let tx=-nz,tz=nx;if(tx*sn+tz*co<0){tx=-tx;tz=-tz;}const target=Math.atan2(tx,tz),error=Math.atan2(Math.sin(target-car.heading),Math.cos(target-car.heading)),headOn=Math.abs(error)>Math.PI*75/180;
-  if(inward>0){car.vx-=nx*inward;car.vz-=nz*inward;}car.contactTarget=target;
-  if(headOn)car.contactYaw=0;else if(inward>0)car.contactYaw=Math.sign(error)*Math.min(.85,Math.abs(error)*4,inward*.06+Math.abs(car.vx*tx+car.vz*tz)*.055);
+  const {depth,nx,nz}=worst,inward=car.vx*nx+car.vz*nz;car.contact=true;
+  if(inward>0){car.vx-=nx*inward;car.vz-=nz*inward;}
   if(depth<=0)break;
-  const angle=headOn?0:Math.sign(error)*Math.min(.008,Math.abs(error),depth*Math.abs(lever)/(inertia+lever*lever)*.30),c=Math.cos(angle),s=Math.sin(angle);
-  car.heading+=angle;car.x=cx-(c*rx+s*rz)-nx*(depth+.00005);car.z=cz-(-s*rx+c*rz)-nz*(depth+.00005);
+  car.x-=nx*(depth+.0005);car.z-=nz*(depth+.0005);
  }
  if(car.contact)car.speed=car.vx*Math.sin(car.heading)+car.vz*Math.cos(car.heading);
 }

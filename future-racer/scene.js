@@ -1,11 +1,12 @@
 import * as THREE from './vendor/three.module.js';
-import {sampleTrack,STEP} from './track.js?v=20261108-3';
+import {sampleTrack,STEP} from './track.js?v=20261108-5';
 import {random,clamp} from './music.js';
 import {concreteMaterial} from './concrete.js';
 import {CrossTrailHistory,crossAt} from './trail.js';
 import {Atmosphere} from './atmosphere.js';
-import {cityRows,roofPose} from './city.js';
-import {StreetReflections} from './reflections.js';
+import {cityRows,roofPose} from './city.js?v=20261108-5';
+import {StreetReflections} from './reflections.js?v=20261108-5';
+import {RoofBeacons} from './beacons.js';
 const V=THREE.Vector3;
 export class RaceScene{
  constructor(canvas){
@@ -63,8 +64,8 @@ export class RaceScene{
    const geo=new THREE.BufferGeometry(),data=new THREE.InterleavedBuffer(new Float32Array(binary,p.offset,p.count*6),6);geo.setAttribute('position',new THREE.InterleavedBufferAttribute(data,3,0));geo.setAttribute('normal',new THREE.InterleavedBufferAttribute(data,3,3));
    if(!materials[p.material]){
     const metal=/Titanium|Alloy|Steel|Metal/i.test(p.material),tail=/REAR_CROSS_LED/i.test(p.material),led=/LED|LIGHT|DRL/i.test(p.material);const color=new THREE.Color().fromArray(p.color);
-    const mat=new THREE.MeshStandardMaterial({color,metalness:metal?.92:.12,roughness:metal?.23:.78,envMapIntensity:metal?2.4:.65});
-    if(p.material==='Satin_Titanium'){mat.color.setRGB(.62,.65,.67);mat.metalness=1;mat.envMapIntensity=1.1;mat.emissive.setRGB(.012,.014,.015);}
+    const mat=new THREE.MeshStandardMaterial({color,metalness:metal?.9:.12,roughness:metal?.36:.78,envMapIntensity:metal?1:.65});
+    if(p.material==='Satin_Titanium'){mat.color.setRGB(.48,.51,.52);mat.metalness=.9;mat.roughness=.38;mat.envMapIntensity=.8;mat.emissive.setRGB(.002,.003,.003);}
     if(/Glass/i.test(p.material)){mat.metalness=.7;mat.roughness=.1;}
     if(tail||led){mat.emissive.copy(color);mat.emissiveIntensity=tail?4:2;if(tail)this.tailMaterials.push(mat);}
     if(tail){mat.color.set(0x000000);mat.emissive.set(0xff0300);mat.envMapIntensity=0;mat.toneMapped=false;}
@@ -146,7 +147,7 @@ export class RaceScene{
     const c=Math.cos(row.heading),sn=Math.sin(row.heading);
     if(row.label){const wall=this.cityMeshes['building_'+row.variant].walls[-row.side];if(wall){const lx=wall.x*row.w-row.side*.025,lz=(wall.z0+wall.z1)*.5*row.d,width=Math.min(row.number.length>2?6:4,(wall.z1-wall.z0)*row.d*.65),height=Math.min(6.5,(wall.y1-wall.y0)*row.h*.65);if(width>2&&height>2)this.addWallSign({x:row.x+c*lx+sn*lz,y:(wall.y0+wall.y1)*.5*row.h,z:row.z-sn*lx+c*lz,heading:row.heading,width,height},row.side,row.number,{factory:'WORKS',power:'POWER',warehouse:'STORAGE',quiet:'DEPOT'}[row.zone]);}}
     if(row.roof){const p=roofPose(row),scale=row.roofScale;roofs[row.roof].push({x:p.x,y:p.y,z:p.z,w:scale,h:scale,d:scale,rot:p.heading});
-     const mark=(x,y,z)=>{const co=Math.cos(p.heading),si=Math.sin(p.heading);add('red',p.x+(co*x+si*z)*scale,p.y+y*scale,p.z+(-si*x+co*z)*scale,.16,.16,.16);};
+     const mark=(x,y,z)=>{const co=Math.cos(p.heading),si=Math.sin(p.heading);add('red',p.x+(co*x+si*z)*scale,p.y+y*scale,p.z+(-si*x+co*z)*scale,.28,.28,.28);boxes.red.at(-1).phase=row.s*17+row.side*11;};
      if(row.roof==='crane'){mark(0,12.1,0);mark(15,10.5,0);}else mark(0,row.roof==='mast'?5.2:4.7,0);
     }else if(row.s%72===0){add('red',row.x-c*row.w*.3,row.h+.15,row.z+sn*row.w*.3,.14,.14,.14);add('red',row.x+c*row.w*.3,row.h+.15,row.z-sn*row.w*.3,.14,.14,.14);}
    }
@@ -159,7 +160,10 @@ export class RaceScene{
    const p=at(d,side*11),q=at(d+64,side*11);add('pole',p.x,6,p.z,.13,12,.13,p.heading);add('pole',p.x,11.6,p.z,2,.12,.12,p.heading);
    for(const shift of [-.7,.7])for(let k=0;k<10;k++){const u=k/10,v=(k+1)/10;wires.push(p.x+(q.x-p.x)*u+shift,11.8-Math.sin(u*Math.PI)*1.6,p.z+(q.z-p.z)*u,p.x+(q.x-p.x)*v+shift,11.8-Math.sin(v*Math.PI)*1.6,p.z+(q.z-p.z)*v);}
   }
-  instances(boxes.concrete,this.concrete);instances(boxes.dark,this.darkConcrete);instances(boxes.pole,this.poleMaterial);instances(boxes.light,this.lightMaterial);this.beacons=instances(boxes.red,this.redMaterial);this.beaconRows=boxes.red;
+  instances(boxes.concrete,this.concrete);instances(boxes.dark,this.darkConcrete);instances(boxes.pole,this.poleMaterial);instances(boxes.light,this.lightMaterial);
+  this.roofBeacons=boxes.red.length?new RoofBeacons(boxes.red,this.boxGeometry):null;
+  if(this.roofBeacons)this.chunkGroup.add(this.roofBeacons.core,this.roofBeacons.glow);
+  if(this.cityStats)this.cityStats.warningLights=boxes.red.length;
   const poolGeo=new THREE.PlaneGeometry(16,30);for(const p of pools){const mesh=new THREE.Mesh(poolGeo,this.poolMaterial);mesh.rotation.set(-Math.PI/2,0,p.heading);mesh.position.set(p.x,.044,p.z);this.chunkGroup.add(mesh);}
   const lineGeo=new THREE.BufferGeometry();lineGeo.setAttribute('position',new THREE.Float32BufferAttribute(wires,3));this.chunkGroup.add(new THREE.LineSegments(lineGeo,new THREE.LineBasicMaterial({color:0x263d38})));
   // A physical finish gantry, with a visible chequered header.
@@ -183,7 +187,7 @@ export class RaceScene{
   this.poolMaterial.opacity=.34+energy*.12;
   const lamps=this.lampRows?.map(p=>({...p,d:Math.hypot(p.x-car.x,p.z-car.z)})).sort((a,b)=>a.d-b.d)||[];
   this.streetLights.forEach((light,i)=>{const p=lamps[i];light.intensity=p?85*clamp((140-p.d)/45):0;if(p){light.position.set(p.x,8,p.z);light.target.position.set(p.target.x,0,p.target.z);}});
-  if(this.beacons){this.beaconRows.forEach((p,i)=>{const seed=random(Math.round(p.x*17+p.z*31))(),period=1.6+seed*.6,amount=.08+.92*Math.max(0,Math.sin(time*Math.PI*2/period+seed*17))**6;this.beacons.setColorAt(i,this.warningColor.setRGB(2.5*amount,.012*amount,.004*amount));});this.beacons.instanceColor.needsUpdate=true;}
+  if(this.roofBeacons){const size=this.renderer.getDrawingBufferSize(new THREE.Vector2());this.roofBeacons.update(time,size.x,size.y,this.renderer.getPixelRatio());}
   if(this.verticalTailMesh){const gauge=clamp(car.nitro);this.verticalTailMesh.scale.y=gauge;this.verticalTailMesh.position.y=this.gaugeBottom*(1-gauge);this.verticalTailMesh.visible=gauge>.001;if(this.verticalTailGlow){this.verticalTailGlow.scale.y=gauge;this.verticalTailGlow.position.y=.435+.467*gauge;this.verticalTailGlow.visible=gauge>.001;this.verticalTailGlow.material.opacity=car.boost>0?.9:.65;}}
   const changed=this.lastMode!==this.mode;
   if(this.cameraHeading===undefined||changed)this.cameraHeading=car.heading;

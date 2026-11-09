@@ -5,7 +5,7 @@ export class StreetReflections{
   this.race=race;this.age=1;this.probeAge=1;this.enabled=true;
   this.target=new THREE.WebGLRenderTarget(480,270,{type:THREE.HalfFloatType,depthBuffer:true});this.camera=new THREE.PerspectiveCamera();
   this.matrix=new THREE.Matrix4();this.uniforms={roadReflection:{value:this.target.texture},roadReflectionMatrix:{value:this.matrix},roadReflectionPixel:{value:new THREE.Vector2(1/480,1/270)}};
-  this.cubeTarget=new THREE.WebGLCubeRenderTarget(64,{type:THREE.HalfFloatType,generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter});this.cubeCamera=new THREE.CubeCamera(.15,420,this.cubeTarget);this.cubeCamera.position.set(0,1.2,0);
+  this.cubeTarget=new THREE.WebGLCubeRenderTarget(128,{type:THREE.HalfFloatType,generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter});this.cubeCamera=new THREE.CubeCamera(.15,420,this.cubeTarget);this.cubeCamera.position.set(0,1.2,0);
   this.attachRoad();
  }
  attachRoad(){
@@ -31,11 +31,11 @@ outgoingLight=mix(outgoingLight,reflected,wet);
  update(dt){
   if(!this.enabled)return;this.age+=dt;this.probeAge+=dt;if(this.age<1/30)return;this.age=0;
   const r=this.race,renderer=r.renderer,scene=r.scene,camera=r.camera,hidden=[];
-  scene.traverse(o=>{if(o.visible&&(o===r.car||o===r.base||o===r.crossTrail||o.material===r.roadMaterial)){hidden.push(o);o.visible=false;}});
-  const oldFog=scene.fog,shadowAuto=renderer.shadowMap.autoUpdate;renderer.shadowMap.autoUpdate=false;scene.fog=new THREE.FogExp2(0x315f61,.006);
-  if(this.probeAge>=.2){this.probeAge=0;this.cubeCamera.update(renderer,scene);this.cubeTarget.texture.needsPMREMUpdate=true;scene.environment=this.cubeTarget.texture;}
+  scene.traverse(o=>{if(o.visible&&(o===r.car||o===r.base||o===r.crossTrail||o.material===r.roadMaterial||o.userData.excludeFromReflections)){hidden.push(o);o.visible=false;}});
+  const oldFog=scene.fog,oldEnvironment=scene.environment,shadowAuto=renderer.shadowMap.autoUpdate;renderer.shadowMap.autoUpdate=false;scene.fog=new THREE.FogExp2(0x315f61,.006);scene.environment=r.environment.texture;
+  if(this.probeAge>=.1){this.probeAge=0;this.cubeCamera.update(renderer,scene);this.cubeTarget.texture.needsPMREMUpdate=true;this.hasProbe=true;}
   this.camera.copy(camera);this.camera.position.copy(camera.position);this.camera.position.y=-camera.position.y+.02;const dir=camera.getWorldDirection(new THREE.Vector3());dir.y=-dir.y;this.camera.up.set(0,-1,0);this.camera.lookAt(this.camera.position.clone().add(dir));this.camera.updateMatrixWorld();
   this.matrix.set(.5,0,0,.5,0,.5,0,.5,0,0,.5,.5,0,0,0,1).multiply(this.camera.projectionMatrix).multiply(this.camera.matrixWorldInverse);
-  renderer.setRenderTarget(this.target);renderer.render(scene,this.camera);renderer.setRenderTarget(null);scene.fog=oldFog;renderer.shadowMap.autoUpdate=shadowAuto;for(const object of hidden)object.visible=true;
+  renderer.setRenderTarget(this.target);renderer.render(scene,this.camera);renderer.setRenderTarget(null);scene.fog=oldFog;scene.environment=this.hasProbe?this.cubeTarget.texture:oldEnvironment;renderer.shadowMap.autoUpdate=shadowAuto;for(const object of hidden)object.visible=true;
  }
 }
