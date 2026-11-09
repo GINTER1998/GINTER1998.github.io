@@ -1,6 +1,8 @@
 import * as THREE from './vendor/three.module.js';
 import {sampleTrack,STEP} from './track.js';
 import {random,clamp} from './music.js';
+import {concreteMaterial} from './concrete.js';
+import {CrossTrailHistory,crossAt} from './trail.js';
 const V=THREE.Vector3;
 export class RaceScene{
  constructor(canvas){
@@ -8,18 +10,18 @@ export class RaceScene{
   this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));this.renderer.setSize(innerWidth,innerHeight);
   this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.05;
   this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  this.scene=new THREE.Scene();this.scene.background=new THREE.Color('#386967');this.scene.fog=new THREE.FogExp2('#386967',.006);
+  this.scene=new THREE.Scene();this.scene.background=new THREE.Color('#566967');this.scene.fog=new THREE.FogExp2('#566967',.0048);
   this.camera=new THREE.PerspectiveCamera(57,innerWidth/innerHeight,.1,1400);
   this.world=new THREE.Group();this.scene.add(this.world);this.mode=0;
-  this.scene.add(new THREE.HemisphereLight(0xb8e4e3,0x1b2222,1.7));
-  const sun=new THREE.DirectionalLight(0xd4e8df,1.8);sun.position.set(-30,60,20);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-14,right:14,top:14,bottom:-14,near:1,far:140});sun.shadow.bias=-.0005;sun.shadow.normalBias=.02;this.scene.add(sun);
+  this.scene.add(new THREE.HemisphereLight(0xd4d8d6,0x252624,1.65));
+  const sun=new THREE.DirectionalLight(0xe4e2d8,1.8);sun.position.set(-30,60,20);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-14,right:14,top:14,bottom:-14,near:1,far:140});sun.shadow.bias=-.0005;sun.shadow.normalBias=.02;this.scene.add(sun);
   this.car=new THREE.Group();this.scene.add(this.car);this.wheels={};this.lamps={};this.tailMaterials=[];
   this.setupEnvironment();this.boxGeometry=new THREE.BoxGeometry(1,1,1);this.groundMaterials=[];
   const grainCanvas=document.createElement('canvas');grainCanvas.width=grainCanvas.height=256;const gc=grainCanvas.getContext('2d'),pixels=gc.createImageData(256,256),rng=random(1730);for(let i=0;i<pixels.data.length;i+=4){const value=155+rng()*100;pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=value;pixels.data[i+3]=255;}gc.putImageData(pixels,0,0);this.grain=new THREE.CanvasTexture(grainCanvas);this.grain.wrapS=this.grain.wrapT=THREE.RepeatWrapping;this.grain.repeat.set(1,1);this.grain.anisotropy=4;
-  this.concrete=new THREE.MeshStandardMaterial({color:0x6b7773,roughness:.94,map:this.grain,bumpMap:this.grain,bumpScale:.045});
-  this.darkConcrete=new THREE.MeshStandardMaterial({color:0x455b57,roughness:.98,map:this.grain});
+  this.concrete=concreteMaterial(0x96948f);
+  this.darkConcrete=concreteMaterial(0x72716d);
   this.roadMaterial=new THREE.MeshStandardMaterial({color:0x111919,roughness:.54,metalness:.18,map:this.grain,bumpMap:this.grain,bumpScale:.018});
-  this.shoulderMaterial=new THREE.MeshStandardMaterial({color:0x66716d,roughness:.9,map:this.grain});
+  this.shoulderMaterial=new THREE.MeshStandardMaterial({color:0x73736e,roughness:.95,envMapIntensity:.1});
   this.paint=new THREE.MeshStandardMaterial({color:0xaaa58b,roughness:.8});
   this.poleMaterial=new THREE.MeshStandardMaterial({color:0x253633,metalness:.65,roughness:.5});
   this.lightMaterial=new THREE.MeshBasicMaterial({color:0xffdfaa});this.redMaterial=new THREE.MeshBasicMaterial({color:0xec382e});
@@ -30,7 +32,7 @@ export class RaceScene{
   const shadow=new THREE.Mesh(new THREE.PlaneGeometry(3.5,6),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shadowCanvas),transparent:true,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.022;this.car.add(shadow);
   this.headlights=[];for(const side of [-1,1]){const l=new THREE.SpotLight(0xf4ecd5,55,58,.4,.8,1.3);l.position.set(side*.75,.65,1.8);l.target.position.set(side*.8,0,22);this.car.add(l,l.target);this.headlights.push(l);}
   this.tailGlow=new THREE.PointLight(0xff2012,4,5,2);this.tailGlow.position.set(0,.4,-2.25);this.car.add(this.tailGlow);
-  this.nitroGroup=new THREE.Group();this.car.add(this.nitroGroup);const nm=new THREE.MeshBasicMaterial({color:0x82efff,transparent:true,opacity:.6,depthWrite:false});for(const side of [-1,1]){const m=new THREE.Mesh(new THREE.ConeGeometry(.12,2,8),nm);m.rotation.x=-Math.PI/2;m.position.set(side*.65,.32,-2.7);this.nitroGroup.add(m);}this.nitroGroup.visible=false;
+  this.setupCrossTrail();
   this.camera.position.set(0,3,-10);this.look=new V(0,1,12);this.camera.lookAt(this.look);
   window.addEventListener('resize',()=>this.resize());
  }
@@ -40,7 +42,7 @@ export class RaceScene{
   const texture=new THREE.CanvasTexture(c);texture.mapping=THREE.EquirectangularReflectionMapping;texture.colorSpace=THREE.SRGBColorSpace;const pmrem=new THREE.PMREMGenerator(this.renderer);this.environment=pmrem.fromEquirectangular(texture);this.scene.environment=this.environment.texture;texture.dispose();pmrem.dispose();
  }
  async loadVehicle(){
-  const [setup,binary]=await Promise.all([fetch('./assets/vehicle.json').then(r=>{if(!r.ok)throw Error('车辆配置读取失败');return r.json();}),fetch('./assets/vehicle.bin').then(r=>{if(!r.ok)throw Error('车辆模型读取失败');return r.arrayBuffer();})]);
+  const [setup,binary]=await Promise.all([fetch('./assets/vehicle.json').then(r=>{if(!r.ok)throw Error('Could not load the vehicle');return r.json();}),fetch('./assets/vehicle.bin').then(r=>{if(!r.ok)throw Error('Could not load the vehicle');return r.arrayBuffer();})]);
   this.model=new THREE.Group();this.model.scale.setScalar(setup.scale);this.car.add(this.model);const materials={};
   for(const [tag,w] of Object.entries(setup.wheels)){const hub=new THREE.Group(),spin=new THREE.Group();hub.position.fromArray(w.center);hub.add(spin);this.model.add(hub);this.wheels[tag]={hub,spin,radius:w.radius};}
   for(const [tag,l] of Object.entries(setup.lamps)){const hinge=new THREE.Group();hinge.position.fromArray(l.hinge);this.model.add(hinge);this.lamps[tag]=hinge;}
@@ -51,7 +53,7 @@ export class RaceScene{
     const mat=new THREE.MeshStandardMaterial({color,metalness:metal?.92:.12,roughness:metal?.25:.78,envMapIntensity:metal?1.8:.65});
     if(/Glass/i.test(p.material)){mat.metalness=.7;mat.roughness=.1;}
     if(tail||led){mat.emissive.copy(color);mat.emissiveIntensity=tail?4:2;if(tail)this.tailMaterials.push(mat);}
-    if(tail){mat.color.set(0x300200);mat.emissive.set(0xff0800);}
+    if(tail){mat.color.set(0x000000);mat.emissive.set(0xff0300);mat.envMapIntensity=0;mat.toneMapped=false;}
     materials[p.material]=mat;
    }
    const mesh=new THREE.Mesh(geo,materials[p.material]);mesh.castShadow=true;
@@ -60,7 +62,26 @@ export class RaceScene{
   }
   this.vehicleInfo={id:setup.id,parts:setup.parts.length};return this.vehicleInfo;
  }
- setTrack(track){this.track=track;this.chunk=-Infinity;this.rebuild(24);}
+ setupCrossTrail(){
+  this.trailHistory=new CrossTrailHistory();const capacity=40*24;
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(capacity*3),3).setUsage(THREE.DynamicDrawUsage));geometry.setAttribute('trailUV',new THREE.BufferAttribute(new Float32Array(capacity*2),2).setUsage(THREE.DynamicDrawUsage));geometry.setAttribute('strength',new THREE.BufferAttribute(new Float32Array(capacity),1).setUsage(THREE.DynamicDrawUsage));
+  const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,toneMapped:false,vertexShader:`attribute vec2 trailUV;attribute float strength;varying vec2 vTrailUV;varying float vStrength;void main(){vTrailUV=trailUV;vStrength=strength;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`varying vec2 vTrailUV;varying float vStrength;void main(){float edge=exp(-min(vTrailUV.x,1.-vTrailUV.x)*38.);float fade=pow(max(0.,1.-vTrailUV.y),1.8);float alpha=(.085+.65*edge)*vStrength*fade;gl_FragColor=vec4(1.,.006,.002,alpha);}`});
+  this.crossTrail=new THREE.Mesh(geometry,material);this.crossTrail.frustumCulled=false;this.crossTrail.visible=false;this.world.add(this.crossTrail);
+ }
+ updateCrossTrail(car,dt,active){
+  const rows=this.trailHistory.update(car,dt,active),geometry=this.crossTrail.geometry,positions=geometry.attributes.position,uv=geometry.attributes.trailUV,strength=geometry.attributes.strength;let count=0;
+  for(let i=0;i<rows.length-1;i++){
+   const a=rows[i],b=rows[i+1];if(Math.hypot(a.x-b.x,a.z-b.z)<.01)continue;const ca=crossAt(a),cb=crossAt(b);
+   // Thin luminous rims keep the vertical ribbon readable directly behind the car.
+   for(const [cross,row]of [[ca,a],[cb,b]])for(const endpoint of cross[1]){const nx=Math.cos(row.heading)*.02,nz=-Math.sin(row.heading)*.02;cross.push([[endpoint[0]-nx,endpoint[1],endpoint[2]-nz],[endpoint[0]+nx,endpoint[1],endpoint[2]+nz]]);}
+   for(let axis=0;axis<4;axis++){if(axis&&Math.max(a.gauge,b.gauge)<.001)continue;
+    const vertices=[ca[axis][0],ca[axis][1],cb[axis][1],ca[axis][0],cb[axis][1],cb[axis][0]],coords=[[0,a.age],[1,a.age],[1,b.age],[0,a.age],[1,b.age],[0,b.age]],alpha=[a.strength,a.strength,b.strength,a.strength,b.strength,b.strength];
+    for(let k=0;k<6;k++){positions.setXYZ(count,...vertices[k]);uv.setXY(count,...coords[k]);strength.setX(count,alpha[k]);count++;}
+   }
+  }
+  geometry.setDrawRange(0,count);positions.needsUpdate=uv.needsUpdate=strength.needsUpdate=true;this.crossTrail.visible=count>0;
+ }
+ setTrack(track){this.track=track;this.chunk=-Infinity;this.trailHistory.reset();this.rebuild(24);}
  meshStrip(from,to,left,right,material,y=.01){
   const positions=[],uv=[],indices=[];
   for(let s=from,i=0;s<=to+STEP;s+=STEP,i++){
@@ -93,8 +114,7 @@ export class RaceScene{
    if(type===4){const q=at(d+12,offset);add('pole',q.x,height+6,q.z,.6,12,.6);add('pole',q.x,height+11,q.z,25,.35,.45,p.heading+.3);add('red',q.x,height+12,q.z,.18,.18,.18);}
    // Concrete seams and a recessed entrance.
    const face=at(d+12,side*12.85);add('dark',face.x,1.8,face.z,.06,3.6,2.5,p.heading);
-   for(let h=5;h<height;h+=6){const f=at(d+12,side*12.97);add('dark',f.x,h,f.z,.025,.035,depth*.96,p.heading);}
-   if(d%64===0)this.addWallSign(at(d+12,side*12.78),side,String(Math.floor(rng()*99)).padStart(2,'0'),['工業','電力','倉庫','機械'][Math.floor(rng()*4)]);
+   if(d%64===0)this.addWallSign(at(d+12,side*12.78),side,String(Math.floor(rng()*99)).padStart(2,'0'),['FACTORY','POWER','STORAGE','WORKS'][Math.floor(rng()*4)]);
   }
   for(let d=Math.ceil(from/64)*64;d<to;d+=64)for(const side of [-1,1]){
    const p=at(d,side*11),q=at(d+64,side*11);add('pole',p.x,6,p.z,.13,12,.13,p.heading);add('pole',p.x,11.6,p.z,2,.12,.12,p.heading);
@@ -107,19 +127,19 @@ export class RaceScene{
   if(this.track.length>from&&this.track.length<to){const p=sampleTrack(this.track,this.track.length);const group=new THREE.Group();group.position.set(p.x,0,p.z);group.rotation.y=p.heading;for(const side of [-1,1]){const m=new THREE.Mesh(this.boxGeometry,this.poleMaterial);m.position.set(side*6,3.8,0);m.scale.set(.3,7.6,.3);group.add(m);}const c=document.createElement('canvas');c.width=512;c.height=64;const cx=c.getContext('2d');for(let x=0;x<32;x++)for(let y=0;y<4;y++){cx.fillStyle=(x+y)%2?'#1a2927':'#dadcc8';cx.fillRect(x*16,y*16,16,16);}const mat=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),side:THREE.DoubleSide});const mesh=new THREE.Mesh(new THREE.PlaneGeometry(12,1.5),mat);mesh.position.y=7;mesh.userData.ownMaterial=true;group.add(mesh);this.chunkGroup.add(group);}
  }
  addWallSign(p,side,number,label){
-  const c=document.createElement('canvas');c.width=256;c.height=384;const cx=c.getContext('2d');cx.fillStyle='#c4d0bd';cx.textAlign='center';cx.font='bold 170px sans-serif';cx.fillText(number,128,185);cx.font='bold 42px sans-serif';cx.fillText(label,128,255);const rng=random(Number(number));cx.globalCompositeOperation='destination-out';for(let i=0;i<1100;i++)cx.fillRect(rng()*256,rng()*384,rng()*6+1,rng()*3+1);
+  const c=document.createElement('canvas');c.width=256;c.height=384;const cx=c.getContext('2d');cx.fillStyle='#c4c3b9';cx.textAlign='center';cx.font='bold 170px sans-serif';cx.fillText(number,128,185);cx.font='bold 29px sans-serif';cx.fillText(label,128,255);const rng=random(Number(number));cx.globalCompositeOperation='destination-out';for(let i=0;i<1100;i++)cx.fillRect(rng()*256,rng()*384,rng()*6+1,rng()*3+1);
   const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;const mat=new THREE.MeshStandardMaterial({map:texture,transparent:true,roughness:1,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1});const mesh=new THREE.Mesh(new THREE.PlaneGeometry(4,6),mat);mesh.position.set(p.x,5.5,p.z);mesh.rotation.y=p.heading+(side===1?-Math.PI/2:Math.PI/2);mesh.userData.ownMaterial=true;this.chunkGroup.add(mesh);
  }
  resize(){this.renderer.setSize(innerWidth,innerHeight);this.camera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();}
  setQuality(low){this.renderer.setPixelRatio(Math.min(devicePixelRatio,low?1:1.6));this.renderer.shadowMap.enabled=!low;this.resize();}
- render(car,dt,time,energy=0,brake=false,idle=false){
+ render(car,dt,time,energy=0,brake=false,idle=false,active=true){
   if(Math.floor(car.s/96)!==this.chunk)this.rebuild(car.s);
   this.world.position.set(-car.x,0,-car.z);this.car.rotation.y=car.heading;this.car.position.y=.008;
   for(const [tag,w]of Object.entries(this.wheels)){w.spin.rotation.x+=car.speed*dt/(w.radius*.8);w.hub.rotation.y=tag.endsWith('F')?car.steer:0;}
   for(const hinge of Object.values(this.lamps))hinge.rotation.x=THREE.MathUtils.damp(hinge.rotation.x,this.lightsOpen?-.506:0,9,dt);
   for(const l of this.headlights)l.intensity=this.lightsOpen?55:16;
   for(const m of this.tailMaterials)m.emissiveIntensity=brake?7:3;
-  this.tailGlow.intensity=brake?8:3;this.nitroGroup.visible=car.boost>0;this.nitroGroup.scale.z=1+Math.sin(time*43)*.14;
+  this.tailGlow.intensity=car.boost>0?9:brake?8:3;this.updateCrossTrail(car,dt,active&&!idle);
   this.poolMaterial.opacity=.34+energy*.12;
   this.redMaterial.color.setRGB(.7+.25*Math.sin(time*2.1),.025,.01);
   const h=car.heading;let local;
